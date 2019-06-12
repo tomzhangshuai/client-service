@@ -1,0 +1,216 @@
+[framework][18:02:04,586-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62493 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:02:04,591-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:659)][INFO]:No active profile set, falling back to default profiles: default 
+[framework][18:02:04,697-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@4c1d9d4b: startup date [Fri Jul 06 18:02:04 CST 2018]; root of context hierarchy 
+[framework][18:02:06,240-org.mybatis.spring.mapper.ClassPathMapperScanner.doScan(ClassPathMapperScanner.java:166)][WARN]:No MyBatis mapper was found in '[com.wufanbao.api.oldclientservice]' package. Please check your configuration. 
+[framework][18:02:06,793-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$e6f2619f] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:02:07,113-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:02:07,214-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 2521 ms 
+[framework][18:02:07,339-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:02:07,349-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:02:07,350-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:02:07,350-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:02:07,351-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:02:07,417-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleController': Unsatisfied dependency expressed through field 'articleService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleServiceImpl': Unsatisfied dependency expressed through field 'articleDao'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:02:07,439-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:02:07,527-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field articleDao in com.wufanbao.api.oldclientservice.service.impl.ArticleServiceImpl required a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' in your configuration.
+ 
+[framework][18:07:35,122-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62696 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:07:35,136-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:659)][INFO]:No active profile set, falling back to default profiles: default 
+[framework][18:07:35,296-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@47542153: startup date [Fri Jul 06 18:07:35 CST 2018]; root of context hierarchy 
+[framework][18:07:36,976-org.mybatis.spring.mapper.ClassPathMapperScanner.doScan(ClassPathMapperScanner.java:166)][WARN]:No MyBatis mapper was found in '[com.wufanbao.api.oldclientservice]' package. Please check your configuration. 
+[framework][18:07:37,607-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$9623d74d] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:07:37,915-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:07:38,011-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 2719 ms 
+[framework][18:07:38,113-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:07:38,116-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:07:38,117-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:07:38,117-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:07:38,117-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:07:38,255-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleController': Unsatisfied dependency expressed through field 'articleService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleServiceImpl': Unsatisfied dependency expressed through field 'articleDao'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:07:38,299-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:07:38,423-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field articleDao in com.wufanbao.api.oldclientservice.service.impl.ArticleServiceImpl required a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' in your configuration.
+ 
+[framework][18:11:22,182-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62722 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:11:22,186-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:659)][INFO]:No active profile set, falling back to default profiles: default 
+[framework][18:11:22,329-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@65d6b83b: startup date [Fri Jul 06 18:11:22 CST 2018]; root of context hierarchy 
+[framework][18:11:24,503-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$cfead7e3] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:11:24,852-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:11:25,039-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 2715 ms 
+[framework][18:11:25,187-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:11:25,191-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:11:25,192-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:11:25,192-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:11:25,192-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:11:25,269-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleController': Unsatisfied dependency expressed through field 'articleService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleServiceImpl': Unsatisfied dependency expressed through field 'articleDao'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'articleDao' defined in file [/Users/bear/projects/api/old-client-service/target/classes/com/wufanbao/api/oldclientservice/dao/ArticleDao.class]: Unsatisfied dependency expressed through bean property 'sqlSessionFactory'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'sqlSessionFactory' defined in class path resource [org/mybatis/spring/boot/autoconfigure/MybatisAutoConfiguration.class]: Unsatisfied dependency expressed through method 'sqlSessionFactory' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [org/springframework/boot/autoconfigure/jdbc/DataSourceConfiguration$Hikari.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [com.zaxxer.hikari.HikariDataSource]: Factory method 'dataSource' threw exception; nested exception is org.springframework.boot.autoconfigure.jdbc.DataSourceProperties$DataSourceBeanCreationException: Failed to determine a suitable driver class 
+[framework][18:11:25,289-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:11:25,295-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to configure a DataSource: 'url' attribute is not specified and no embedded datasource could be configured.
+
+Reason: Failed to determine a suitable driver class
+
+
+Action:
+
+Consider the following:
+	If you want an embedded database (H2, HSQL or Derby), please put it on the classpath.
+	If you have database settings to be loaded from a particular profile you may need to activate it (no profiles are currently active).
+ 
+[framework][18:16:15,835-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62824 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:16:15,839-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:663)][INFO]:The following profiles are active: dev 
+[framework][18:16:16,086-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@1ed1993a: startup date [Fri Jul 06 18:16:16 CST 2018]; root of context hierarchy 
+[framework][18:16:18,614-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$9bd3a6ff] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:16:19,378-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:16:19,873-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 3797 ms 
+[framework][18:16:19,983-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:16:19,992-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:16:19,992-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:16:19,993-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:16:19,993-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:16:20,411-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayController': Unsatisfied dependency expressed through field 'familyPayService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayServiceImpl': Unsatisfied dependency expressed through field 'jedisPool'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'redis.clients.jedis.JedisPool' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:16:20,428-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:16:20,579-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:18:42,858-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62950 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:18:42,912-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:663)][INFO]:The following profiles are active: dev 
+[framework][18:18:43,015-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@3ba9ad43: startup date [Fri Jul 06 18:18:43 CST 2018]; root of context hierarchy 
+[framework][18:18:45,000-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$86f8dfec] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:18:45,337-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:18:45,441-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 2430 ms 
+[framework][18:18:45,577-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:18:45,591-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:18:45,591-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:18:45,591-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:18:45,591-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:18:45,953-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayController': Unsatisfied dependency expressed through field 'familyPayService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayServiceImpl': Unsatisfied dependency expressed through field 'jedisPool'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'redis.clients.jedis.JedisPool' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:18:45,967-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:18:46,061-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:19:02,375-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62954 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:19:02,377-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:663)][INFO]:The following profiles are active: dev 
+[framework][18:19:02,580-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@3cc2931c: startup date [Fri Jul 06 18:19:02 CST 2018]; root of context hierarchy 
+[framework][18:19:05,167-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$e967f329] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:19:05,758-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:19:05,869-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 3303 ms 
+[framework][18:19:06,024-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:19:06,029-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:19:06,029-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:19:06,029-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:19:06,029-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:19:06,370-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayController': Unsatisfied dependency expressed through field 'familyPayService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayServiceImpl': Unsatisfied dependency expressed through field 'jedisPool'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'redis.clients.jedis.JedisPool' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:19:06,385-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:19:06,488-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:19:47,270-org.springframework.boot.StartupInfoLogger.logStarting(StartupInfoLogger.java:50)][INFO]:Starting OldClientServiceApplication on beardeMacBook-Pro.local with PID 62962 (/Users/bear/projects/api/old-client-service/target/classes started by bear in /Users/bear/projects/api/eureka-server) 
+[framework][18:19:47,275-org.springframework.boot.SpringApplication.logStartupProfileInfo(SpringApplication.java:663)][INFO]:The following profiles are active: dev 
+[framework][18:19:47,396-org.springframework.context.support.AbstractApplicationContext.prepareRefresh(AbstractApplicationContext.java:590)][INFO]:Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@e056f20: startup date [Fri Jul 06 18:19:47 CST 2018]; root of context hierarchy 
+[framework][18:19:49,383-org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker.postProcessAfterInitialization(PostProcessorRegistrationDelegate.java:328)][INFO]:Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$7817c310] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying) 
+[framework][18:19:49,735-org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:91)][INFO]:Tomcat initialized with port(s): 8080 (http) 
+[framework][18:19:49,841-org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.prepareWebApplicationContext(ServletWebServerApplicationContext.java:285)][INFO]:Root WebApplicationContext: initialization completed in 2450 ms 
+[framework][18:19:49,951-org.springframework.boot.web.servlet.ServletRegistrationBean.addRegistration(ServletRegistrationBean.java:186)][INFO]:Servlet dispatcherServlet mapped to [/] 
+[framework][18:19:49,958-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'characterEncodingFilter' to: [/*] 
+[framework][18:19:49,959-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'hiddenHttpMethodFilter' to: [/*] 
+[framework][18:19:49,959-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'httpPutFormContentFilter' to: [/*] 
+[framework][18:19:49,959-org.springframework.boot.web.servlet.AbstractFilterRegistrationBean.configure(AbstractFilterRegistrationBean.java:245)][INFO]:Mapping filter: 'requestContextFilter' to: [/*] 
+[framework][18:19:50,335-org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:558)][WARN]:Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayController': Unsatisfied dependency expressed through field 'familyPayService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'familyPayServiceImpl': Unsatisfied dependency expressed through field 'jedisPool'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'redis.clients.jedis.JedisPool' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)} 
+[framework][18:19:50,349-org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener.logAutoConfigurationReport(ConditionEvaluationReportLoggingListener.java:101)][INFO]:
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled. 
+[framework][18:19:50,468-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 

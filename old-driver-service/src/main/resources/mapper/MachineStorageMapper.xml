@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.MachineStorageDao">
+    <!--根据机器id查询机器内商品的位置 -->
+    <select id="getMachineStorageInfo" resultType="com.wufanbao.api.olddriverservice.entity.MachineStorage">
+        select * from machinestorage where MachineId=#{machineId} order by turn
+    </select>
+    <!--查询下架商品和被绑定的商品 -->
+    <select id="soldOutInfo" resultType="com.wufanbao.api.olddriverservice.entity.Product">
+        select productGlobalId,offProductGlobalId from product where MachineId=#{machineId} and OffProductGlobalId
+        in(select ProductGlobalId from product where MachineId=#{machineId} and IsActive=0 and Quantity>0)
+    </select>
+    <!--查询机器内商品的数量 -->
+    <select id="getProductInfo" resultType="com.wufanbao.api.olddriverservice.entity.Product">
+        select * from product where MachineId=#{machineId} and ProductGlobalId not in(select ProductGlobalId from
+        product where MachineId=#{machineId} and IsActive=0 and MaxQuantity=0 and Quantity=0) and IsStaple=1
+    </select>
+    <!-- 获取补货单信息 -->
+    <select id="getSupplementOrderInfo" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        select * from supplementorderline where SupplementOrderId=#{supplementOrderId} AND IsStaple=1
+    </select>
+    <!--更新机器内商品的位置 -->
+    <update id="arrangeGoods" parameterType="com.wufanbao.api.olddriverservice.entity.MachineStorage">
+        update machinestorage set boxnum=#{boxNum},productGlobalId=#{productGlobalId} where machineId=#{machineId} and
+        turn=#{turn}
+    </update>
+    <!--下货信息-->
+    <select id="dumpQuantity" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        select ProductGlobalId as productGlobalId,DumpQuantity as dumpQuantity from supplementorderline where
+        SupplementOrderId=#{supplementOrderId}
+    </select>
+    <insert id="insertGoods" parameterType="com.wufanbao.api.olddriverservice.entity.MachineStorage">
+        insert into machinestorage values(#{machineId},#{position},#{productGlobalId},#{boxNum},#{turn})
+    </insert>
+    <select id="getMachineProduct" resultType="com.wufanbao.api.olddriverservice.entity.Product">
+        select ProductGlobalId as productGlobalId ,sum(BoxNum) as quantity from machinestorage where
+        MachineId=#{machineId} and ProductGlobalId!=0 GROUP BY ProductGlobalId
+    </select>
+    <select id="getProduct" resultType="com.wufanbao.api.olddriverservice.entity.Product">
+        SELECT quantity,lockQuantity,useableQuantity FROM product WHERE machineId = #{machineId} and
+        productGlobalId=#{productGlobalId}
+    </select>
+    <update id="updateProduct">
+        update product set quantity=#{quantity},useableQuantity=#{useableQuantity} where MachineId=#{machineId} and
+        ProductGlobalId=#{productGlobalId} and #{quantity}&lt;=maxQuantity and #{useableQuantity}&lt;=maxQuantity
+    </update>
+    <!-- 根据机器id获取机器型号-->
+    <select id="getMachineModel" resultType="com.wufanbao.api.olddriverservice.entity.MachineModel">
+        SELECT
+        ms.MachineId as machineId,
+        count(*) as countRow,
+        mm.BoxNum as boxNum
+        FROM
+        machinestorage ms
+        INNER JOIN machine m ON ms.MachineId = m.MachineId
+        INNER JOIN machinemodel mm ON m.Model = mm.Model
+        WHERE
+        ms.MachineId =#{machineId}
+        GROUP BY
+        ms.MachineId,
+        mm.boxnum
+    </select>
+    <!-- 查询最大定位值-->
+    <select id="getBigPosition" resultType="java.lang.Integer">
+        select position from machinestorage where machineid=#{machineId} order by Position desc limit 1
+    </select>
+</mapper>

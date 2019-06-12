@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.ProductDao">
+    <resultMap id="QueryProduct" type="com.wufanbao.api.oldclientservice.entity.QueryProduct" autoMapping="true">
+        <result column="quantity" property="quantity"/>
+        <result column="lockQuantity" property="lockQuantity"/>
+        <result column="useableQuantity" property="useableQuantity"/>
+    </resultMap>
+    <select id="queryProduct" resultMap="QueryProduct">
+        SELECT Quantity,LockQuantity,UseableQuantity
+        FROM product
+        WHERE ProductGlobalId = #{productGlobalId} AND MachineId = #{machineId}
+    </select>
+    <select id="queryProducts" resultType="com.wufanbao.api.oldclientservice.entity.QueryProduct">
+        SELECT
+        pt.Quantity,
+        pt.LockQuantity,
+        pt.UseableQuantity,
+        uol.ProductGlobalId,
+        uo.MachineId,
+        uol.Quantity AS buyQuantity
+        FROM
+        userorder uo
+        LEFT JOIN product pt ON pt.MachineId = uo.MachineId
+        LEFT JOIN userorderline uol ON uol.ProductGlobalId = pt.ProductGlobalId AND uo.userOrderId=uol.userOrderId
+        WHERE uol.UserOrderId=#{userOrderId}
+    </select>
+    <resultMap id="Machine" type="com.wufanbao.api.oldclientservice.entity.Machine" autoMapping="true">
+        <result column="quantity" property="quantity"/>
+        <result column="lockQuantity" property="lockQuantity"/>
+        <result column="useableQuantity" property="useableQuantity"/>
+        <result column="machineId" property="machineId"/>
+    </resultMap>
+    <select id="queryMachine" resultMap="Machine">
+        SELECT quantity,lockQuantity,useableQuantity FROM machine WHERE machineId = #{machineId}
+    </select>
+    <update id="unLockProduct">
+        UPDATE product
+        SET LockQuantity=LockQuantity-#{quantity},UseableQuantity=UseableQuantity+#{quantity}
+        WHERE ProductGlobalId=#{productGlobalId}
+        AND MachineId=#{machineId}
+        and (LockQuantity-#{quantity})>=0
+    </update>
+    <!--更新用户商品表 -->
+    <update id="lockProduct">
+        UPDATE product
+        SET LockQuantity = (LockQuantity + #{quantity}),
+        UseableQuantity=(UseableQuantity-#{quantity})
+        where MachineId=#{machineId}
+        and productglobalId=#{productGlobalId}
+        and (UseableQuantity-#{quantity}) >=0
+    </update>
+    <!--更新机器表数量 -->
+    <update id="lockMachineProduct">
+        update machine set lockQuantity=(lockQuantity+#{quantity}),useableQuantity=(useableQuantity-#{quantity}) where
+        machineId=#{machineId} and (useableQuantity-#{quantity})>=0
+    </update>
+    <update id="unLockMachineProduct">
+        UPDATE machine SET lockQuantity=(lockQuantity-#{quantity}),UseableQuantity=(useableQuantity+#{quantity}) WHERE
+        MachineId=#{machineId} and (lockQuantity-#{quantity})>=0
+    </update>
+    <resultMap id="userOrder" type="com.wufanbao.api.oldclientservice.entity.UserOrder" autoMapping="true">
+        <result column="userId" property="userId"/>
+        <result column="discountId" property="discountId"/>
+    </resultMap>
+    <select id="queryOrder" resultMap="userOrder">
+        SELECT userId,discountId,actualAmount FROM userorder WHERE userOrderId=#{userOrderId}
+    </select>
+
+
+</mapper>

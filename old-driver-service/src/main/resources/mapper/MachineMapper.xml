@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.MachineDao">
+    <update id="updateMachine" parameterType="com.wufanbao.api.olddriverservice.entity.Machine">
+        UPDATE Machine SET
+        createTime=CURRENT_TIMESTAMP,quantity=#{quantity},lockQuantity=#{lockQuantity},useableQuantity=#{useableQuantity}
+        WHERE machineId=#{machineId}
+    </update>
+    <update id="updateMachineOne" parameterType="com.wufanbao.api.olddriverservice.entity.Machine">
+        UPDATE Machine SET
+        createTime=CURRENT_TIMESTAMP,quantity=(quantity+#{quantity}),lockQuantity=(lockQuantity+#{lockQuantity}),useableQuantity=(useableQuantity+#{useableQuantity})
+        WHERE machineId=#{machineId}
+    </update>
+
+    <select id="queryMachine" resultType="com.wufanbao.api.olddriverservice.entity.Machine">
+        SELECT quantity,lockQuantity,useableQuantity FROM machine WHERE machineId = #{machineId}
+    </select>
+    <select id="getMachineIdByNo" resultType="java.lang.Long">
+        select machineId from machine where MachineNo=#{machineNo}
+    </select>
+</mapper>

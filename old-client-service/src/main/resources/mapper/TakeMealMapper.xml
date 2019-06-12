@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.TakeMealDao">
+    <!--查询商品名字-->
+    <select id="productName" resultType="com.wufanbao.api.oldclientservice.entity.ProductDetails">
+        SELECT * FROM productglobal WHERE ProductGlobalId = #{productGlobalId}
+    </select>
+    <!--查询商品状态-->
+    <select id="productStatus" resultType="com.wufanbao.api.oldclientservice.entity.ProductOff">
+        SELECT status,productGlobalId,outId,productOffId FROM productoff
+        WHERE SourceId =#{sourceId}
+    </select>
+    <select id="productLists" resultType="com.wufanbao.api.oldclientservice.entity.ProductTakeMeal">
+        SELECT
+        u.Quantity,
+        pg.ProductName,
+        pg.ProductGlobalId,
+        pg.attachImageUrls AS imageUrl,
+        p.IsStaple,
+        upl.ProductOffId,
+        upl.RelationTime
+        FROM userorderline u
+        LEFT JOIN userorder uu ON uu.UserOrderId = u.UserOrderId
+        LEFT JOIN userorderproductline upl ON upl.UserOrderId = u.UserOrderId AND upl.ProductGlobalId =
+        u.ProductGlobalId
+        LEFT JOIN product p ON p.ProductGlobalId = u.ProductGlobalId AND uu.MachineId = p.MachineId
+        LEFT JOIN productglobal pg ON pg.ProductGlobalId = u.ProductGlobalId
+        WHERE u.userorderId= #{userOrderId} order By upl.UserOrderProductLineId asc;
+    </select>
+    <insert id="addUserOrderProductLine" parameterType="com.wufanbao.api.oldclientservice.entity.UserOrderProductLine">
+        INSERT INTO userorderproductline(userOrderProductLineId,userOrderId,productGlobalId,productOffId)
+        VALUES (#{userOrderProductLineId},#{userOrderId},#{productGlobalId},#{productOffId})
+    </insert>
+    <select id="queryUserOrderProductLine" resultType="com.wufanbao.api.oldclientservice.entity.UserOrderProductLine">
+        select * from userorderproductline WHERE userOrderId = #{userOrderId} order By UserOrderProductLineId desc
+    </select>
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/1 time:11.01 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserLoginDao">
+    <!--根据用户账号和密码去查询用户id -->
+    <select id="getUserLogin" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select
+        userId,loginno,password,username,usablebalance,integral,mB,portrait,invitationCode,payPassWord,isActive,gradeValue,sex,birthday,breakfast,lunch,dinner
+        from user where LoginNo=#{mb} and passWord=#{password}
+    </select>
+    <select id="checkUserMb" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select
+        userId,parentUserId,loginno,password,username,usablebalance,integral,mB,portrait,invitationCode,payPassWord,isActive,gradeValue,sex,birthday,breakfast,lunch,dinner
+        from user where LoginNo=#{mB}
+    </select>
+    <select id="getUserBinding" resultType="java.lang.Long">
+        select userId from userbinding where bindingId=#{bindingId}
+    </select>
+    <update id="updateBinDingUserId">
+        update userbinding set userId=#{userId} where bindingId=#{bindingId}
+    </update>
+    <insert id="userBinding">
+        insert into userBinding VALUES (#{userId},#{bindingId},#{bindingType},CURRENT_TIMESTAMP)
+        on DUPLICATE key
+        update bindingId=#{bindingId},bindingTime=CURRENT_TIMESTAMP
+    </insert>
+    <select id="getUserIdByBindingId" resultType="java.lang.Long">
+        select userId from userBinding where bindingId=#{bindingId}
+    </select>
+    <select id="getUserByUserId" resultType="com.wufanbao.api.oldclientservice.entity.User">
+        select * from user where UserId=#{userId}
+    </select>
+    <update id="updateUserByUserId">
+        update user set LoginNo=#{loginNo} where userId=#{userId}
+    </update>
+    <select id="getUserBindingInfo" resultType="java.util.HashMap">
+        select userId,bindingId,bindingType,bindingTime from userbinding where userId=#{userId} and
+        bindingType=#{bindingType}
+    </select>
+    <update id="updateUserBinding">
+        update userBinding set bindingId=#{bindingId} where userId=#{userId} and bindingType=#{bindingType}
+    </update>
+</mapper>

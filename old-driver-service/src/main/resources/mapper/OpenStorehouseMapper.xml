@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.OpenStorehouseDao">
+    <resultMap id="openStorehouse" type="com.wufanbao.api.olddriverservice.entity.OpenStorehouse" autoMapping="true">
+        <result column="machineNo" property="machineNo"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="supplementStatus" property="supplementStatus"/>
+    </resultMap>
+    <select id="openStorehouseList" resultMap="openStorehouse">
+        SELECT
+        m.machineNo,
+        su.supplementOrderId,
+        su.supplementStatus
+        FROM
+        machine m
+        LEFT JOIN supplementorder su ON su.MachineId = m.MachineId
+        WHERE m.MachineNo=#{machineNo} AND su.SupplementOrderId=#{supplementOrderId}
+    </select>
+    <resultMap id="openStatus" type="com.wufanbao.api.olddriverservice.entity.OpenStatus" autoMapping="true">
+        <result column="supplementStatus" property="supplementStatus"/>
+        <result column="machineId" property="machineId"/>
+    </resultMap>
+    <select id="openStatus" resultMap="openStatus">
+        SELECT supplementStatus,machineId FROM supplementOrder WHERE supplementOrderId = #{supplementOrderId}
+    </select>
+    <select id="productTypes" resultType="java.lang.Integer">
+        select IsStaple from supplementorderline where SupplementOrderId=#{supplementOrderId} group by IsStaple;
+    </select>
+</mapper>

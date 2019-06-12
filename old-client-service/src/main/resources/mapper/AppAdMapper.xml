@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.AppAdDao">
+    <select id="getAppAd" resultType="com.wufanbao.api.oldclientservice.entity.AppAd">
+        select * from appad where IsActive=1
+    </select>
+    <!-- 版本控制  -->
+    <select id="versionCode" resultType="java.util.HashMap">
+        select versionCode,versionName,content,downloadLink,createTime,effectiveTime,forceLevel from versioncontrol
+        where EffectiveTime &lt; CURRENT_TIMESTAMP ORDER BY EffectiveTime desc LIMIT 1
+    </select>
+</mapper>

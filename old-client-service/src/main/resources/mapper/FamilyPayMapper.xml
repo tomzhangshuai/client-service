@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.FamilyPayDao">
+    <select id="getUserFamilyPayInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserFamilyPayRelation">
+        select * from userfamilypayrelation where userId=#{userId}
+    </select>
+    <update id="updateParentId">
+        update user set parentUserId=#{parentId} where userId=#{userId}
+    </update>
+    <insert id="insertFamilyPayInfo">
+        insert into
+        userfamilypayrelation(masterUserId,userId,quotaType,limitQuota,totalquota,consumeQuota,totalAmount,disabled,updateTime,createTime)
+        VALUES
+        (#{masterUserId},#{userId},#{quotaType},#{limitQuota},#{totalQuota},#{consumeQuota},#{totalAmount},#{disabled},CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+    </insert>
+    <select id="selectUserFamilyPayInfo" resultType="java.util.HashMap">
+        select uf.MasterUserId as masterUserId,
+        uf.QuotaType as quotaType,
+        uf.LimitQuota as limitQuota,
+        uf.TotalQuota as totalQuota,
+        uf.ConsumeQuota as consumeQuota,
+        u.userId as userId,
+        u.Portrait as portrait,
+        substring(u.mB, -4)as mB,
+        u.userName as userName
+        from userfamilypayrelation uf left join user u on uf.UserId=u.UserId where uf.MasterUserId=#{masterUserId};
+    </select>
+    <select id="selectSonUserFamilyPayInfo" resultType="java.util.HashMap">
+        select uf.MasterUserId as masterUserId,
+        uf.QuotaType as quotaType,
+        uf.LimitQuota as limitQuota,
+        uf.TotalQuota as totalQuota,
+        uf.ConsumeQuota as consumeQuota,
+        u.userId as userId,
+        u.Portrait as portrait,
+        substring(u.mB, -4)as mB,
+        u.userName as userName
+        from userfamilypayrelation uf left join user u on uf.MasterUserId=u.UserId where uf.UserId=#{userId};
+    </select>
+    <delete id="deleteSonUser">
+        delete from userfamilypayrelation where userId=#{userId} and masterUserId=#{masterUserId}
+    </delete>
+    <update id="updateFamilyPayInfo">
+        update userfamilypayrelation
+        <trim prefix="set" suffixOverrides=",">
+            <if test="quotaType !=null">
+                quotaType=#{quotaType},
+            </if>
+            <if test="limitQuota !=null">
+                LimitQuota=#{limitQuota},
+            </if>
+            <if test="totalQuota !=null">
+                totalQuota=#{totalQuota},
+            </if>
+            <if test="consumeQuota !=null">
+                ConsumeQuota=#{consumeQuota},
+            </if>
+            <if test="disabled !=null">
+                disabled=#{disabled},
+            </if>
+        </trim>
+        where userId=#{userId} and MasterUserId=#{masterUserId}
+    </update>
+    <select id="getUserFamilyInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserFamilyPayRelation">
+        select * from userfamilypayrelation where MasterUserId=#{masterUserId} and UserId=#{userId};
+    </select>
+    <!-- 查询主账户的余额 -->
+    <select id="getParentBalance" resultType="java.util.HashMap">
+        select
+        u.UsableBalance as usableBalance,
+        uf.MasterUserId as masterUserId,
+        uf.UserId as userId,
+        uf.QuotaType as quotaType,
+        uf.LimitQuota as limitQuota,
+        uf.totalQuota as totalQuota,
+        uf.ConsumeQuota as consumeQuota,
+        uf.TotalAmount as totalAmount,
+        uf.Disabled as disabled from user u left join userfamilypayrelation uf on uf.MasterUserId=u.UserId where
+        uf.UserId=#{userId}
+    </select>
+    <!-- 修改用户家庭付余额 -->
+    <update id="updateUserFamilyPay">
+        update userfamilypayrelation set consumeQuota=(ConsumeQuota+#{amount}),TotalAmount=(TotalAmount+#{amount}) where
+        userId=#{userId} and (TotalQuota-ConsumeQuota-#{amount})>=0
+    </update>
+    <select id="iFFamilyPay" resultType="com.wufanbao.api.oldclientservice.entity.UserFamilyPayRelation">
+        select * from userfamilypayrelation where userid=#{userId} and Disabled=1
+    </select>
+    <select id="ifMasterUser" resultType="com.wufanbao.api.oldclientservice.entity.UserFamilyPayRelation">
+        select * from userfamilypayrelation where masterUserId=#{userId} limit 1
+    </select>
+    <select id="getUserMaster" resultType="com.wufanbao.api.oldclientservice.entity.UserCapitalLog">
+        select * from usercapitallog where userId!=#{userId} and sourceId=#{userOrderId} and sourceType=#{sourceType};
+    </select>
+    <select id="userFamilyPayInfo" resultType="java.util.HashMap">
+        SELECT quotaType,( TotalQuota-ConsumeQuota) AS
+        residueQuota,totalQuota,totalAmount,IFNULL(TIMESTAMPDIFF(Day,uf.createTime,CURRENT_TIMESTAMP),0) AS addUpDay,
+        u.UserName AS masertUserName,u.Portrait AS masterPortrait,u.userId as masterUserId
+        FROM userfamilypayrelation uf LEFT JOIN user u ON uf.MasterUserId=u.userId
+        WHERE uf.userId=#{userId}
+    </select>
+</mapper>

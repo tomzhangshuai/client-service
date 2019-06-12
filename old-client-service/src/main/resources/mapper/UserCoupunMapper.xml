@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/2 time:14:38 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserCouponDao">
+    <!--根据用户Id查询用户可以用的优惠券 -->
+    <select id="userCouponDaoRow" resultType="com.wufanbao.api.oldclientservice.entity.UserCoupon">
+        select * from usercoupon where userid=#{userId} and status=1 and EndTime &gt; CURRENT_TIMESTAMP
+    </select>
+    <!--根据用户id查询用户的优惠券 -->
+    <!--5.9修改 -->
+    <select id="getUserCouponInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserCouponInfo">
+        select c.CouponDefinitionId as couponDefinitionId, c.CouponType as couponType,c.CouponName as
+        couponName,c.UseRule as useRule,
+        c.ValidityRule as validityRule,c.Amount as amount,c.Content as content,u.CouponId as couponId,u.UserId as
+        userId,u.Status as status,
+        u.CreateTime as createTime,u.StartTime as startTime,u.EndTime as
+        endTime,c.notice,c.matters,c.territorialLimitation
+        from usercoupon u inner join coupondefinition c on u.CouponDefinitionId=c.CouponDefinitionId where
+        UserId=#{userId} order by u.CreateTime desc
+    </select>
+    <!--可以使用的符合时间条件的优惠券 -->
+    <select id="getUseUserCouponInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserCouponInfo">
+        SELECT
+        c.CouponDefinitionId AS couponDefinitionId,
+        c.CouponType AS couponType,
+        c.CouponName AS couponName,
+        c.UseRule AS useRule,
+        c.ValidityRule AS validityRule,
+        c.Amount AS amount,
+        c.Content AS content,
+        u.CouponId AS couponId,
+        u.UserId AS userId,
+        u. STATUS AS STATUS,
+        u.CreateTime AS createTime,
+        u.StartTime AS startTime,
+        u.EndTime AS endTime,
+        c.territorialLimitation AS territorialLimitation
+        FROM
+        usercoupon u
+        INNER JOIN coupondefinition c ON u.CouponDefinitionId = c.CouponDefinitionId
+        WHERE
+        UserId =#{userId}
+        AND u.StartTime &lt; CURRENT_TIMESTAMP
+        AND CURRENT_TIMESTAMP &lt; u.EndTime
+        AND u. STATUS = 1
+    </select>
+    <!--根据区域名字查询区域id-->
+    <select id="getAreaId" resultType="java.lang.Long">
+        select areaid from area where areaname=#{areaName}
+    </select>
+    <update id="updateCoupon">
+        UPDATE userCoupon SET status=#{status} WHERE userId = #{userId} AND couponId=#{couponId}
+    </update>
+    <!--根据优惠券id和优惠券状态修改优惠券状态 -->
+    <update id="updateUserCouponStatus">
+        update usercoupon set status=#{status} where CouponId=#{couponId}
+    </update>
+    <!--根据有优惠券定义表id和优惠券使用数量更新优惠券数量 -->
+    <update id="updateCouponDefinitionUsed">
+        update coupondefinition set used=used+1 where CouponDefinitionId=#{couponDefinitionId}
+    </update>
+    <insert id="insertUserCoupon" parameterType="com.wufanbao.api.oldclientservice.entity.UserCoupon">
+        insert into usercoupon
+        values(#{couponId},#{couponDefinitionId},#{userId},#{status},#{createTime},#{startTime},#{endTime})
+    </insert>
+    <!--  根据优惠券id查询优惠券信息-->
+    <select id="selectCouponInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserCouponInfo">
+        select * from coupondefinition where CouponDefinitionId=#{couponDefinitionId}
+    </select>
+    <!-- 发放优惠券-->
+    <update id="gotCoupon">
+        update coupondefinition set got=got+1 where CouponDefinitionId=#{couponDefinitionId}
+    </update>
+    <!-- 根据订单id去查看该用户是不是被邀请的-->
+    <select id="getUserInvitation" resultType="com.wufanbao.api.oldclientservice.entity.UserInvitation">
+        SELECT
+        ui.UserId as userId,
+        ui.InvitedUserId as invitedUserId
+        FROM
+        userorder uo
+        inner JOIN userinvitation ui ON uo.UserId = ui.inviteduserid
+        where uo.UserOrderId = #{userOrderId} and ui.InviteType=2
+    </select>
+    <!--  获取奖励源id-->
+    <select id="getInvitationId" resultType="long">
+        select InvitationId from userinvitation where userid=#{userId} and InvitedUserId=#{invitedUserId}
+    </select>
+    <!--  插入奖励信息-->
+    <insert id="insertUserReward" parameterType="com.wufanbao.api.oldclientservice.entity.UserReward">
+        insert into userreward
+        values(#{rewardId},#{userId},#{sourceType},#{sourceId},#{createTime},#{rewardValue},#{rewardType},#{reward})
+    </insert>
+    <select id="getUserQuota" resultType="com.wufanbao.api.oldclientservice.entity.UserQuota">
+        select cd.PaymentDefinitionId as paymentDefinitionId,u.userId as userId,uq.totalquota as
+        totalQuota,uq.consumequota as consumeQuota,cd.QuotaType as quotaType from userQuota uq inner join
+        companypaymentdefinition cd on uq.paymentDefinitionId=cd.PaymentDefinitionId inner join user u on
+        uq.userId=u.userId where uq.userid=#{userId}
+    </select>
+    <select id="getCouponAmount" resultType="java.math.BigDecimal">
+        select amount from coupondefinition where CouponDefinitionId=#{couponDefinitionId};
+    </select>
+    <update id="cancellationCoupon">
+        update usercoupon set Status=0 where Status=1 and EndTime &lt; CURRENT_TIMESTAMP
+    </update>
+    <update id="updateTemp">
+        update tempqrcode set userId=#{userId},used=1,useTime=CURRENT_TIMESTAMP where TempId=#{tempId} and used=0
+    </update>
+    <select id="getUserCouponInfoByCouponId" resultType="java.util.HashMap">
+        select c.CouponDefinitionId as couponDefinitionId, c.CouponType as couponType,c.CouponName as
+        couponName,c.UseRule as useRule,c.ValidityRule as validityRule,c.Amount as amount,c.Content as
+        content,u.CouponId as couponId,u.UserId as userId,u.Status as status,u.CreateTime as createTime,u.StartTime as
+        startTime,u.EndTime as endTime,c.notice as notice,c.matters as matters
+        from usercoupon u inner join coupondefinition c on u.CouponDefinitionId=c.CouponDefinitionId
+        where u.UserId=#{userId} and u.couponId=#{couponId}
+    </select>
+</mapper>

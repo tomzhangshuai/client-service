@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.DistributionCompletionDao">
+    <resultMap id="distributionCompletion" type="com.wufanbao.api.olddriverservice.entity.DistributionCompletion"
+               autoMapping="true">
+        <result column="machineName" property="machineName"/>
+        <result column="machineNo" property="machineNo"/>
+        <result column="companyName" property="companyName"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="productName" property="productName"/>
+        <result column="dumpQuantity" property="dumpQuantity"/>
+        <result column="actualQuantity" property="actualQuantity"/>
+        <result column="exceptionQuantity" property="exceptionQuantity"/>
+        <result column="backQuantity" property="backQuantity"/>
+        <result column="isStaple" property="isStaple"/>
+    </resultMap>
+    <select id="queryDistributionCompletion" resultMap="distributionCompletion">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        su.SupplementOrderId,
+        ptg.ProductName,
+        sul.DumpQuantity,
+        sul.actualQuantity,
+        sul.ExceptionQuantity,
+        sul.BackQuantity,
+        sul.IsStaple
+        FROM
+        supplementorder su
+        LEFT JOIN supplementorderline sul ON su.SupplementOrderId = sul.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        LEFT JOIN product pt ON pt.MachineId = m.MachineId
+        AND pt.ProductGlobalId = ptg.ProductGlobalId
+        WHERE
+        su.supplementOrderId = #{supplementOrderId}
+    </select>
+</mapper>

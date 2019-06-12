@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.SupplementOrderSureDao">
+    <resultMap id="supplementOrderSure" type="com.wufanbao.api.olddriverservice.entity.SupplementOrderSure"
+               autoMapping="true">
+        <result column="machineName" property="machineName"/>
+        <result column="machineNo" property="machineNo"/>
+        <result column="companyName" property="companyName"/>
+        <result column="actualQuantity" property="actualQuantity"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="productName" property="productName"/>
+        <result column="dumpQuantity" property="dumpQuantity"/>
+        <result column="isStaple" property="isStaple"/>
+        <result column="productGlobalId" property="productGlobalId"/>
+        <result column="quantity" property="quantity"/>
+    </resultMap>
+    <select id="querySupplementOrderSure" resultMap="supplementOrderSure">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        sul.ActualQuantity,
+        su.SupplementOrderId,
+        ptg.ProductName,
+        sul.DumpQuantity,
+        pt.ProductGlobalId,
+        pt.IsStaple,
+        sul.quantity
+        FROM
+        supplementorder su
+        LEFT JOIN supplementorderline sul ON su.SupplementOrderId = sul.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        LEFT JOIN product pt ON pt.MachineId = m.MachineId and pt.ProductGlobalId = ptg.ProductGlobalId
+        WHERE su.SupplementOrderId = #{supplementOrderId} AND pt.isStaple=0
+    </select>
+    <select id="querysupplementOrderhou" resultMap="supplementOrderSure">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        sul.ActualQuantity,
+        su.SupplementOrderId,
+        ptg.ProductName,
+        sul.DumpQuantity,
+        pt.ProductGlobalId,
+        pt.IsStaple,
+        sul.quantity
+        FROM
+        supplementorder su
+        LEFT JOIN supplementorderline sul ON su.SupplementOrderId = sul.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        LEFT JOIN product pt ON pt.MachineId = m.MachineId and pt.ProductGlobalId = ptg.ProductGlobalId
+        WHERE su.SupplementOrderId = #{supplementOrderId} AND pt.isStaple=1
+    </select>
+    <select id="queryHeadTool" resultType="com.wufanbao.api.olddriverservice.entity.HeadTool">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        su.SupplementOrderId
+        FROM
+        supplementorder su
+        LEFT JOIN machine m ON m.MachineId = su.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        WHERE su.SupplementOrderId = #{supplementOrderId}
+    </select>
+    <select id="queryDistributionproductline"
+            resultType="com.wufanbao.api.olddriverservice.entity.DistributionProductLine">
+        SELECT * FROM distributionproductline WHERE distributionOrderId = #{distributionOrderId} AND productGlobalId =
+        #{productGlobalId}
+    </select>
+    <update id="updateDistributionProductLine">
+        UPDATE distributionproductline
+        <trim prefix="set" suffixOverrides=",">
+            <if test="exceptionQuantity!= null ">
+                exceptionQuantity=exceptionQuantity+#{exceptionQuantity},
+            </if>
+            <if test="extraQuantity!=null">
+                extraQuantity=extraQuantity+#{extraQuantity},
+            </if>
+            <if test="actualQuantity!=null">
+                actualQuantity=actualQuantity+#{actualQuantity},
+            </if>
+            <if test="surplusQuantity!=null">
+                surplusQuantity=surplusQuantity+#{surplusQuantity},
+            </if>
+        </trim>
+        WHERE distributionOrderId=#{distributionOrderId} AND productGlobalId=#{productGlobalId}
+        <if test="surplusQuantity!=null">
+            AND surplusQuantity+#{surplusQuantity}>=0
+        </if>
+        <if test="extraQuantity!=null">
+            and extraQuantity+#{extraQuantity}>=0
+        </if>
+    </update>
+
+    <select id="getQuantityBySupplementOrderId" resultType="java.lang.Integer">
+        select quantity from supplementorderline where SupplementOrderId=#{supplementOrderId} and
+        productGlobalId=#{productGlobalId}
+    </select>
+
+    <update id="updateDistributionproductline"
+            parameterType="com.wufanbao.api.olddriverservice.entity.DistributionProductLine">
+        UPDATE distributionproductline
+        <trim prefix="set" suffixOverrides=",">
+            <if test="exceptionQuantity!= null ">
+                exceptionQuantity=#{exceptionQuantity},
+            </if>
+            <if test="extraQuantity!=null">
+                extraQuantity=#{extraQuantity},
+            </if>
+            <if test="actualQuantity!=null">
+                actualQuantity=#{actualQuantity},
+            </if>
+            <if test="surplusQuantity!=null">
+                surplusQuantity=#{surplusQuantity},
+            </if>
+        </trim>
+        WHERE distributionOrderId=#{distributionOrderId} AND productGlobalId=#{productGlobalId}
+    </update>
+    <update id="updateSupplementOrderLine" parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        UPDATE supplementorderline SET ActualQuantity=#{actualQuantity}
+        WHERE SupplementOrderId=#{supplementOrderId} AND ProductGlobalId=#{productGlobalId}
+    </update>
+
+    <update id="updateAfterSupplementOrderAfter"
+            parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        UPDATE supplementorderline SET ExceptionQuantity=#{exceptionQuantity},BackQuantity=#{backQuantity}
+        WHERE SupplementOrderId=#{supplementOrderId} AND ProductGlobalId=#{productGlobalId}
+    </update>
+
+    <insert id="addSupplementOrderLine" parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        INSERT INTO SupplementOrderLine(
+        supplementOrderLineId,
+        supplementOrderId,
+        machineId,
+        productGlobalId,
+        stockUpdateTime,
+        stockQuantity,
+        expectQuantity,
+        quantity,
+        actualQuantity,
+        stockConsume,
+        lockQuantity,
+        dumpQuantity,
+        offProductGlobalId,
+        exceptionQuantity,
+        backQuantity,
+        isStaple
+        )
+        VALUES
+        (#{supplementOrderLineId},#{supplementOrderId},#{machineId},#{productGlobalId},CURRENT_TIMESTAMP,0,0,0,0,0,0,0,0,0,#{backQuantity},1)
+    </insert>
+    <select id="queryProductGuobal" resultType="com.wufanbao.api.olddriverservice.entity.ProductGlobal">
+        select ProductGlobalId from productglobal where ProductName=#{productName}
+    </select>
+
+    <resultMap id="supplementOrderLine" type="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine"
+               autoMapping="true">
+        <result column="dumpQuantity" property="dumpQuantity"/>
+    </resultMap>
+    <select id="querySMT" resultMap="supplementOrderLine">
+        SELECT
+        dumpQuantity
+        from supplementorderline where SupplementOrderId=#{supplementOrderId} AND productGlobalId=#{productGlobalId}
+    </select>
+
+    <select id="productGlobalAll" resultType="com.wufanbao.api.olddriverservice.entity.ProductGlobal">
+        select DISTINCT pr.ProductGlobalId,pr.productName,pr.image60 from
+        productglobal pr
+        LEFT JOIN
+        product p
+        ON p.ProductGlobalId = pr.ProductGlobalId
+        WHERE IsStaple = 1
+    </select>
+    <update id="rollbackStatus">
+        update supplementorder set SupplementStatus=SupplementStatus-1 where SupplementOrderId=#{supplementOrderId}
+    </update>
+    <select id="supplementOrderInfo" resultType="java.util.HashMap">
+        select machineId,supplementOrderId from supplementorder where SupplementOrderId=#{supplementOrderId}
+    </select>
+    <select id="getSupplementOrderByMachineId" resultType="java.util.HashMap">
+        select supplementOrderId,machineId from supplementorder where machineId=#{machineId} and
+        supplementOrderId=#{supplementOrderId} and supplementStatus &gt;=6 and supplementStatus &lt;=9
+    </select>
+
+
+    <update id="setSupplementStatus">
+        update supplementorder set SupplementStatus=#{status} where SupplementOrderId=#{supplementOrderId} and
+        SupplementStatus!=#{status}
+    </update>
+
+    <select id="getSupplementOrderLines" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        select * from SupplementOrderLine where SupplementOrderId=#{supplementOrderId}
+    </select>
+    <update id="updateOrderLineForTermination"
+            parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        UPDATE supplementorderline SET BackQuantity=#{backQuantity},DumpQuantity=#{dumpQuantity}
+        WHERE SupplementOrderId=#{supplementOrderId} AND ProductGlobalId=#{productGlobalId}
+    </update>
+</mapper>

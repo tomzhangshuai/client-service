@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserMessageDao">
+    <!--根据用户id查询用户的未读信息-->
+    <select id="getNoReadMessage" resultType="com.wufanbao.api.oldclientservice.entity.UserMessageInfo">
+        select *,0 as isRead,0 as isDeleted from messageInfo where MessageInfoId not in(select MessageInfoId from
+        usermessage where userId=#{userId})
+    </select>
+    <!-- 根据用户id查询用户已经读取过的信息-->
+    <select id="getReadMessage" resultType="com.wufanbao.api.oldclientservice.entity.UserMessageInfo">
+        select mi.*,um.IsRead as isRead,um.IsDeleted as isDeleted from messageInfo mi INNER JOIN usermessage um on
+        um.MessageInfoId=mi.MessageInfoId where um.IsDeleted=0 and um.userId=#{userId}
+    </select>
+    <!--标记已读 -->
+    <insert id="markRead">
+        insert into usermessage values(#{messageInfoId},#{userId},1,0)
+    </insert>
+    <!-- 标记删除-->
+    <update id="markDelete">
+        update usermessage set isDeleted=1 where userId=#{userId}
+    </update>
+</mapper>

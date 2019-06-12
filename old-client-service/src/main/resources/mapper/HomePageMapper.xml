@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan  -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.HomePageDao">
+    <!--获得离用户最近的机器信息 -->
+    <select id="getNearMachine" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        SELECT
+        m.MachineId,m.Address,m.X,m.Y
+        FROM
+        machine m
+        INNER JOIN area a ON m.PutAreaId = a.AreaId
+        INNER JOIN company c ON c.CompanyId = m.CityCompanyId
+        where
+        c.CompanyType = 2
+        AND m.`Status` = 7
+        ORDER BY
+        ACOS(
+        SIN((#{y} * 3.1415) / 180) * SIN((m.Y * 3.1415) / 180) + COS((#{y}* 3.1415) / 180) * COS((m.Y * 3.1415) / 180) *
+        COS(
+        (#{x} * 3.1415) / 180 - (m.X * 3.1415) / 180
+        )
+        ) * 6380 ASC
+        LIMIT 1
+    </select>
+    <select id="machineArea" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        select m.MachineId as machineId,m.MachineName as machineName,m.InMaintenance as inMaintenance, m.JoinCompanyId
+        as joinCompanyId, m.X as x,m.Y as y, a.AreaName as areaName,m.Address as address from machine m inner join area
+        a on m.PutAreaId=a.AreaId where m.machineId=#{machineId}
+    </select>
+
+
+    <!--根据机器编号去查询机器上面的商品 -->
+    <select id="getProductInfo" resultType="com.wufanbao.api.oldclientservice.entity.ProductInfo">
+        SELECT
+        pr.ProductGlobalId,pr.ProductName,pr.Description,pr.Barcode,pr.IsHeating,pr.HeatingSecs,pr.ImageUrl,pr.Image60,pr.attachImageUrls,pr.DisplayUnit,pr.TasteType,p.USEABLEQUANTITY,p.IsActive,p.OfflinePrice,p.OnlinePrice,p.machineId,p.createTime
+        as createTime
+        FROM
+        product p
+        INNER JOIN PRODUCTGLOBAL pr ON p.ProductGlobalId = pr.ProductGlobalId
+        WHERE p.MACHINEID=#{machineId} and p.IsStaple=1 order by p.UseableQuantity desc
+    </select>
+    <!--查询距离用户最近的五台机器 -->
+    <select id="getNearMachine5" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        SELECT
+        m.MachineId as machineId,m.MachineName as machineName,m.InMaintenance as inMaintenance, m.JoinCompanyId as
+        joinCompanyId, m.X as x,m.Y as y,m.Address as address
+        FROM
+        machine m
+        INNER JOIN area a ON m.PutAreaId = a.AreaId
+        INNER JOIN company c ON c.CompanyId = m.CityCompanyId
+        WHERE
+        c.CompanyType = 2
+        AND m.Status= 7
+        AND m.Y > #{y} - 1
+        AND m.Y &lt; #{y} + 1
+        AND m.X > #{x} - 1
+        AND m.X &lt;#{x} +1
+        ORDER BY
+        ACOS(SIN((#{y} * 3.1415) / 180) * SIN((m.Y * 3.1415) / 180) + COS((#{y}* 3.1415) / 180) * COS((m.Y * 3.1415) /
+        180) * COS((#{x} * 3.1415) / 180 - (m.X * 3.1415) / 180))* 6380 ASC
+        LIMIT 4
+    </select>
+    <!--根据已开通城市名称查询某台机器-->
+    <select id="getNearMachineByAdds" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        SELECT
+        m.MachineId as machineId,m.MachineName as machineName, m.JoinCompanyId as joinCompanyId, m.X as x,m.Y as
+        y,m.Address as address
+        FROM
+        machine m
+        INNER JOIN area a ON m.PutAreaId = a.AreaId
+        INNER JOIN company c ON c.CompanyId = m.CityCompanyId
+        WHERE
+        a.AreaName = #{areaName}
+        LIMIT 1
+    </select>
+    <select id="getOpenCity" resultType="com.wufanbao.api.oldclientservice.entity.Area">
+        select * from area where areaId in(SELECT distinct putAreaId FROM machine where Status=7 and IsActive=1)
+    </select>
+    <select id="whetherOpen" resultType="com.wufanbao.api.oldclientservice.entity.Area">
+        select * from area where areaId in(SELECT distinct putAreaId FROM machine where Status=7 and IsActive=1) AND
+        areaName=#{areaName}
+    </select>
+    <select id="machineIfNull" resultType="java.lang.Integer">
+        select IFNULL(sum(UseableQuantity),0) from product where MachineId=#{machineId} and IsStaple=1
+    </select>
+    <!--根据机器投放区域查询投放地址-->
+    <select id="getMachineByAreaId" resultType="java.util.HashMap">
+        SELECT machineId,machineName,address,USEABLEQUANTITY,inMaintenance,x,y FROM machine WHERE isActive=1 AND
+        putAreaId=#{putAreaId}
+    </select>
+    <select id="getMachineInfoByMachineId" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        SELECT machineName,address,IFNULL(fullRefund,0) as fullRefund FROM machine WHERE machineId=#{machineId}
+    </select>
+</mapper>

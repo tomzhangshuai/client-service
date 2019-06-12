@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.GoodsUnderDao">
+    <resultMap id="goodsunder" type="com.wufanbao.api.olddriverservice.entity.GoodsUnder" autoMapping="true">
+        <result column="machineName" property="machineName"/>
+        <result column="machineNo" property="machineNo"/>
+        <result column="companyName" property="companyName"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="productName" property="productName"/>
+        <result column="productGlobalId" property="productGlobalId"/>
+        <result column="isStaple" property="isStaple"/>
+        <result column="quantity" property="quantity"/>
+    </resultMap>
+    <select id="queryGoodsUnders" resultMap="goodsunder">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        su.SupplementOrderId,
+        ptg.ProductName,
+        sul.ProductGlobalId,
+        pt.IsStaple,
+        sul.quantity
+        FROM
+        supplementorder su
+        LEFT JOIN supplementorderline sul ON su.SupplementOrderId = sul.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        LEFT JOIN product pt ON pt.ProductGlobalId = sul.ProductGlobalId and pt.MachineId = m.MachineId
+        WHERE
+        su.SupplementOrderId=#{supplementOrderId}
+    </select>
+    <select id="queryGoodsUnder" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrder">
+        select machineId from supplementorder where SupplementOrderId=#{supplementOrderId}
+    </select>
+    <select id="qureySupp" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        SELECT productGlobalId,quantity FROM supplementOrderLine WHERE supplementOrderId=#{supplementOrderId}
+    </select>
+    <select id="qureyDBPL" resultType="com.wufanbao.api.olddriverservice.entity.DistributionProductLine">
+        SELECT * FROM distributionproductline WHERE distributionOrderId=#{distributionOrderId} AND
+        productGlobalId=#{productGlobalId}
+    </select>
+
+    <update id="updateSupplementOrderLine" parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        UPDATE supplementorderline SET DumpQuantity=#{dumpQuantity}
+        WHERE SupplementOrderId=#{supplementOrderId} AND ProductGlobalId=#{productGlobalId}
+    </update>
+    <update id="updateSupplementOrderStatus" parameterType="com.wufanbao.api.olddriverservice.entity.SupplementOrder">
+        UPDATE supplementorder SET
+        SupplementStatus=#{supplementStatus},shelvedTime=#{shelvedTime,jdbcType=DATE},shelvingTime=#{shelvingTime,jdbcType=DATE}
+        WHERE SupplementOrderId=#{supplementOrderId}
+    </update>
+
+    <!--查询机器内商品的数量 -->
+    <select id="ProductInfo" resultType="com.wufanbao.api.olddriverservice.entity.Product">
+        select * from product where MachineId=#{machineId} and IsActive=1
+    </select>
+    <!-- 获取补货单信息 -->
+    <select id="SupplementOrderInfo" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        select * from supplementorderline where SupplementOrderId=#{supplementOrderId}
+    </select>
+    <select id="supplementOrderInfoOne" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrderLine">
+        select * from supplementorderline where SupplementOrderId=#{supplementOrderId} and
+        ProductGlobalId=#{productGlobalId}
+    </select>
+</mapper>

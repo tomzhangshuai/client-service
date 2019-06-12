@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.distributionservice.dao.DistributionProductLineDao">
+
+    <!--获取确认配送单信息-->
+    <select id="getConfirmData" resultType="com.wufanbao.api.distributionservice.transfer.DistributionProductLineInfo">
+        select
+        d.distributionOrderId,
+         d.ProductGlobalId,
+        d.quantity,
+        d.planQuantity,
+        d.ExtraQuantity,
+        d.actualQuantity,
+        (d.surplusQuantity+d.exceptionQuantity) as surplusQuantity,
+        d.exceptionQuantity,
+        p.ProductName,
+        p.isStaple,
+        p.CategoryId
+        from distributionproductline d  join productglobal p on
+        d.ProductGlobalId=p.ProductGlobalId where d.DistributionOrderId=#{distributionOrderId}
+    </select>
+
+    <!-- 获取单纯的配送单商品明细-->
+   <select id="getOrderProductLines" resultType="com.wufanbao.api.distributionservice.entities.DistributionProductLine">
+     select *  from DistributionProductLine where DistributionOrderId=#{distributionOrderId}
+ </select>
+
+    <!--  获取已配送数量 配送数量 -->
+    <select id="getDistributingQuantity" resultType="com.wufanbao.api.distributionservice.entities.DistributionProductLine">
+        select distributionOrderId,SUM(ActualQuantity) as actualQuantity,SUM(quantity) as quantity from
+        distributionproductline where distributionorderid=#{distributionOrderId}
+    </select>
+
+    <update id="dump">
+        update DistributionProductLine
+        set SurplusQuantity=SurplusQuantity-#{dumpQuantity},ExtraQuantity=ExtraQuantity-#{extraQuantity}
+        where
+        distributionOrderId=#{distributionOrderId} and ProductGlobalId=#{productGlobalId} and SurplusQuantity>=#{dumpQuantity} and ExtraQuantity>=#{extraQuantity}
+    </update>
+
+    <!-- 回退商品数量 -->
+ <update id="shelve">
+     UPDATE DistributionProductLine SET ActualQuantity=ActualQuantity+#{actualQuantity},SurplusQuantity=SurplusQuantity+#{backQuantity},ExtraQuantity=ExtraQuantity+#{backQuantity},ExceptionQuantity=ExceptionQuantity+#{exceptionQuantity} where
+     distributionOrderId=#{distributionOrderId} and ProductGlobalId=#{productGlobalId}
+ </update>
+
+    <!-- 返仓确认时，修改异常数量及剩余数量 -->
+    <update id="modifyByConfirmDistribution" parameterType="com.wufanbao.api.distributionservice.entities.DistributionProductLine">
+        update DistributionProductLine set SurplusQuantity=#{surplusQuantity},ExceptionQuantity=#{exceptionQuantity} where distributionOrderId=#{distributionOrderId} and ProductGlobalId=#{productGlobalId}
+    </update>
+
+</mapper>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        .container {
+            width: 95%;
+            margin: 30px auto;
+        }
+
+        .form-inline {
+            text-align: right;
+        }
+
+        .t-center {
+            text-align: center;
+        }
+
+        .mt20 {
+            margin-top: 20px;
+        }
+
+        .pro-img {
+            width: 120px;
+            height: 70px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="form-group">
+        <label class="control-label" style="float: left;line-height: 34px;">机器id</label>
+        <div class="col-sm-3">
+            <input type="email" class="form-control" id="inputEmail3" placeholder="机器id">
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-primary" id="search">搜索</button>
+        </div>
+        <!-- <div class="col-sm-1">
+           <button class="btn btn-primary" id="clear">清空machineId</button></div>-->
+        <div style="clear: both"></div>
+    </div>
+    <table class="table table-bordered t-center mt20">
+        <thead>
+        <tr>
+            <th>图片</th>
+            <th>商品ID</th>
+            <th>商品名称</th>
+            <th>商品数量</th>
+            <th>最大数量</th>
+            <th>锁定数量</th>
+            <th>可使用数量</th>
+            <th>是否主食</th>
+            <th width="200px">配送数量</th>
+        </tr>
+        </thead>
+        <tbody id="list">
+        <tr>
+        </tr>
+        </tbody>
+    </table>
+    <div class="form-inline">
+        <label class="control-label" style="float:left; line-height: 34px;">配送员登录账号</label>
+        <div class="col-sm-3">
+            <input type="email" class="form-control" id="telephone" placeholder="手机号码">
+        </div>
+        <button class="btn btn-primary" id="submit">提交</button>
+    </div>
+</div>
+<script src="jquery-3.3.1.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+<script>
+    $(function () {
+//        var url = 'http://api.wufanbao.cn/v11'
+        var url = 'https://api.wufanbao.cn/v12/AlphaDriver'
+        //var url = 'http://192.168.2.121:8082'
+        var submitData = {}
+        $('#submit').on('click', function () {
+            submitForm()
+        })
+        $('#search').click(function () {
+            showInfo()
+        })
+        $('#clear').click(function () {
+            $('#inputEmail3').val('')
+        })
+
+        function showInfo() {
+            var machineId = $.trim($('#inputEmail3').val())
+            if (machineId == '') {
+                alert('机器id不能为空！')
+                return;
+            }
+            submitData.machineId = machineId.toString()
+            $.ajax({
+                url: url + "/replenishmentPrepare/showMachineInfo?machineId=" + machineId,
+                success: function (res, response) {
+                    var html = ''
+                    if (res) {
+                        for (var i = 0; i < res.person.length; i++) {
+                            var listObj = res.person[i];
+                            var food = listObj.isStaple ? "是" : "否"
+                            html += '' +
+                                ' <tr >' +
+                                '      <td><img class="pro-img" src="' + listObj.imageUrl + '" alt=""></td>' +
+                                '      <td>' + listObj.productGlobalId + '</td>' +
+                                '      <td>' + listObj.productName + '</td>' +
+                                '      <td>' + listObj.quantity + '</td>' +
+                                '      <td>' + listObj.maxQuantity + '</td>' +
+                                '      <td>' + listObj.lockQuantity + '</td>' +
+                                '      <td>' + listObj.useableQuantity + '</td>' +
+                                '      <td>' + food + '</td>' +
+                                '      <td maxQuantity="' + listObj.maxQuantity + '" proId="' + listObj.productGlobalId + '" isStaple="' + listObj.isStaple + '"><input type="text" class="form-control" value="0"></td>' +
+                                '    </tr>'
+                        }
+                        $('#list').html(html)
+                    }
+                }
+            })
+        }
+
+        function submitForm() {
+            var product = []
+            var telephone = $('#telephone').val()
+            $('#list tr').each(function (value, v) {
+                var isStaple = $(v).find('td:last-child').attr('isStaple')
+                var proId = $(v).find('td:last-child').attr('proId')
+                var maxQuantity = $(v).find('td:last-child').attr('maxQuantity');
+                var quantity = $(v).find('td:last-child input').val()
+                product.push({isStaple: isStaple, quantity: quantity, productGlobalId: proId, maxQuantity: maxQuantity})
+            })
+            submitData.product = JSON.stringify(product)
+            submitData.loginNo = telephone
+            $.ajax({
+                type: 'POST',
+                url: url + "/replenishmentPrepare/preparatoryWork",
+                // headers: {"Content-Type": "application/json"},
+                dataType: 'json',
+                data: submitData,
+                success: function (res, response) {
+                    if (res.code == 1) {
+                        alert(res.message)
+                    } else {
+                        alert(res.message)
+                    }
+                    console.log(res)
+                }
+            })
+        }
+    })
+</script>
+</body>
+</html>

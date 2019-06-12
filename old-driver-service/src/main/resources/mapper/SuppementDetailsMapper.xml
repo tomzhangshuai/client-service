@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.SupplementDetailsDao">
+    <resultMap id="supplementDetails" type="com.wufanbao.api.olddriverservice.entity.SupplementDetails"
+               autoMapping="true">
+        <result column="machineName" property="machineName"/>
+        <result column="machineNo" property="machineNo"/>
+        <result column="companyName" property="companyName"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="productName" property="productName"/>
+        <result column="quantity" property="quantity"/>
+        <result column="isStaple" property="isStaple"/>
+    </resultMap>
+    <select id="querySupplementDetails" resultMap="supplementDetails">
+        SELECT
+        m.MachineName,
+        m.MachineNo,
+        c.companyName,
+        su.SupplementOrderId,
+        ptg.ProductName,
+        sul.Quantity,
+        pt.isStaple
+        FROM
+        supplementorder su
+        LEFT JOIN supplementorderline sul ON su.SupplementOrderId = sul.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = su.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        LEFT JOIN product pt ON pt.ProductGlobalId = sul.ProductGlobalId
+        AND pt.MachineId = m.MachineId
+        WHERE
+        su.SupplementOrderId = #{supplementOrderId}
+    </select>
+</mapper>

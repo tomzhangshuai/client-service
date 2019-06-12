@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserCapitalLogDao">
+    <!--获取这一个月的信息-->
+    <select id="getMonthInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserCapitalLog"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserCapitalLogParameter">
+        select * from usercapitallog
+        where
+        month(CreateTime)=#{month}
+        and YEAR(CreateTime)=#{year}
+        and userId=#{userId}
+        and SourceId not in (select UserOrderId from userorder where PayType between 2 and 3 and userId=#{userId} )
+        order by CreateTime desc
+    </select>
+    <!--获取有多少年-->
+    <select id="getYear" resultType="com.wufanbao.api.oldclientservice.entity.UserCapitalLogParameter"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserCapitalLogParameter">
+        select YEAR(CreateTime) as year from usercapitallog where userid=#{userId} group by YEAR(CreateTime) desc
+    </select>
+    <!--获取这一年有多少个月-->
+    <select id="getMonth" resultType="com.wufanbao.api.oldclientservice.entity.UserCapitalLogParameter"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserCapitalLogParameter">
+        select month(CreateTime) as month from usercapitallog where YEAR(CreateTime)=#{year} and userid=#{userId} GROUP
+        BY month(CreateTime) desc
+    </select>
+    <!--插入消费订单记录-->
+    <insert id="addUserCapital">
+        INSERT INTO usercapitallog (userCapitalLogId,userId,amount,createTime,sourceType,sourceId,description,balance)
+        VALUES
+        (#{userCapitalLogId},#{userId},#{amount},CURRENT_TIMESTAMP,#{sourceType},#{sourceId},#{description},#{balance})
+    </insert>
+    <insert id="insertUserCapital">
+        INSERT INTO usercapitallog (userCapitalLogId,userId,amount,createTime,sourceType,sourceId,description,balance)
+        VALUES
+        (#{userCapitalLogId},#{userId},#{amount},CURRENT_TIMESTAMP,#{sourceType},#{sourceId},#{description},(select
+        UsableBalance from user where userid=#{userId}))
+    </insert>
+
+
+</mapper>

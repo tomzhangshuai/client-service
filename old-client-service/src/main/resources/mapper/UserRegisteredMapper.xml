@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserRegisteredDao">
+    <!-- 用户注册 -->
+    <insert id="add" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        INSERT INTO
+        user(userId,parentUserId,userName,loginNo,passWord,payPassWord,userType,mB,email,integral,balance,usableBalance,lockBalance,invitationCode,isActive,createTime,resetPasswordNeeded,isAuth,isCredit,creditAmount,creditUasbelAmount,creditLimit,portrait,remark,companyPayment,sex)
+        VALUES
+        (#{userId},#{parentUserId},#{userName},#{loginNo},#{passWord},#{payPassWord},#{userType},#{mB},#{email},#{integral},#{balance},#{usableBalance},#{lockBalance},#{invitationCode},#{isActive},CURRENT_TIMESTAMP,#{resetPasswordNeeded},#{isAuth},#{isCredit},#{creditAmount},#{creditUasbelAmount},#{creditLimit},#{portrait},#{remark},#{companyPayment},#{sex})
+    </insert>
+    <!-- 查询 -->
+    <select id="checkMB" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select * from user where LoginNo = #{mB}
+    </select>
+    <!--修改用户余额-->
+    <update id="updateBalance">
+        UPDATE USER SET usableBalance=#{usableBalance},balance=#{balance} WHERE userId = #{userId} and usableBalance>=0
+        and balance>=0
+    </update>
+
+    <!-- 查询用户可用余额 -->
+    <select id="querybalance" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select usableBalance from user where userId = #{userId}
+    </select>
+    <!--检查支付密码是否正确-->
+    <select id="queryPayPwd" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        SELECT userId,payPassword,parentUserId FROM USER WHERE userId=#{userId} AND paypassword=#{paypassword}
+    </select>
+    <!--添加用户-->
+    <insert id="addUser">
+        INSERT INTO
+        user(userId,parentUserId,userName,loginNo,password,payPassword,userType,mb,integral,balance,usableBalance,lockBalance,invitationCode,isActive,createTime,resetPasswordNeeded,isAuth,isCredit,creditAmount,creditUasbelAmount,creditLimit,companyPayment,sex)
+        VALUES
+        (#{userId},#{parentUserId},#{userName},#{loginNo},#{password},#{payPassword},#{userType},#{mb},#{integral},#{balance},#{usableBalance},#{lockBalance},#{invitationCode},#{isActive},CURRENT_TIMESTAMP,#{resetPasswordNeeded},#{isAuth},#{isCredit},#{creditAmount},#{creditUsableAmount},#{creditLimit},#{companyPayment},#{sex})
+    </insert>
+    <select id="getUserParentId" resultType="java.lang.Long">
+        SELECT parentUserId FROM USER WHERE userId=#{userId}
+    </select>
+</mapper>

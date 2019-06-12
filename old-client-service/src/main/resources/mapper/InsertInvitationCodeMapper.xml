@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/4 time:10:24 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.InsertInvitationCodeDao">
+    <!--根据用户邀请码获取邀请用户的UserId -->
+    <select id="getUserId" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select * from user where invitationcode=#{invitationCode}
+    </select>
+    <!--向邀请表插入邀请信息-->
+    <insert id="insertUserInvitation" parameterType="com.wufanbao.api.oldclientservice.entity.UserInvitation">
+        insert into userinvitation
+        values(#{invitationId},#{userId},#{invitedUserId},#{inviteType},#{inviteInfo},CURRENT_TIMESTAMP)
+    </insert>
+    <!-- 根据用户userId获取用户是否被邀请-->
+    <select id="getUserInvitation" resultType="com.wufanbao.api.oldclientservice.entity.UserInvitation">
+        select * from userinvitation where invitedUserId=#{invitedUserId}
+    </select>
+    <!--查询奖励表信息 手机号放到sourceType-->
+    <select id="getRewardInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserReward">
+        select u.mb as sourceType,ur.RewardValue as rewardValue,ur.reward as reward from userreward ur inner join user u
+        on ur.UserId=u.UserId ORDER BY ur.CreateTime desc LIMIT 15
+    </select>
+    <select id="rewardRecord" resultType="com.wufanbao.api.oldclientservice.entity.UserRewardInfo">
+        SELECT
+        u.mb as mb,
+        u.Portrait as portrait,
+        ur.CreateTime as createTime,
+        ur.Reward as reward,
+        ur.rewardValue as rewardValue
+        FROM
+        userinvitation ui
+        left JOIN userreward ur ON ur.SourceId=ui.InvitationId
+        INNER JOIN USER u ON u.UserId = ui.InvitedUserId
+        WHERE
+        ui.InviteType = 2 and ui.UserId=#{userId}
+        ORDER BY
+        ur.CreateTime
+    </select>
+</mapper>

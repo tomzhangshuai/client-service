@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.SignInDao">
+    <insert id="signIn">
+        insert usersignin (userId,signedTime,continuousSignedDays,totalsignedDays,MAXCONTINUOUSSIGNEDDAYS)
+        values(#{userId},CURRENT_TIMESTAMP,1,1,1)
+        on DUPLICATE key
+        update
+        totalsignedDays=case when DateDiff(CURRENT_TIMESTAMP,signedTime)>=1 then totalsignedDays+1 else totalsignedDays
+        end,
+        continuousSignedDays=case when DateDiff(CURRENT_TIMESTAMP,signedTime)=1 then continuousSignedDays+1 when
+        DateDiff(CURRENT_TIMESTAMP,signedTime)=0 then continuousSignedDays else 1 end,
+        signedTime=CURRENT_TIMESTAMP,
+        MAXCONTINUOUSSIGNEDDAYS = CASE WHEN continuousSignedDays >= MAXCONTINUOUSSIGNEDDAYS THEN continuousSignedDays
+        else MAXCONTINUOUSSIGNEDDAYS END;
+    </insert>
+    <insert id="signInLog">
+        insert into usersigninlog values(#{userId},#{signedDay},CURRENT_TIMESTAMP,#{integral})
+    </insert>
+    <select id="selectUserSignIn" resultType="java.util.HashMap">
+        select continuousSignedDays,maxContinuousSignedDays,signedTime,totalSignedDays,userId,IF((select
+        (DateDiff(CURRENT_TIMESTAMP,signedTime)) from usersignin where userid=#{userId})=0,1,0) as
+        ifSignIn,(select(SELECT rowNo FROM (SELECT userId,(@rowNum:=@rowNum+1) AS rowNo FROM usersignin,(SELECT
+        (@rowNum:=0)) b ORDER BY TotalSignedDays asc) c WHERE userId=#{userId})/(select COUNT(userId) from usersignin))
+        as ranking
+        from usersignin where userid=#{userId};
+    </select>
+    <select id="ifSignIn" resultType="java.lang.Boolean">
+        select IF((select (DateDiff(CURRENT_TIMESTAMP,signedTime)) from usersignin where userid=#{userId})=0,1,0) as
+        ifSignIn
+    </select>
+</mapper>

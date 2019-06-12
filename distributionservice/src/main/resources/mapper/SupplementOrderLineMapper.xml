@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.distributionservice.dao.SupplementOrderLineDao">
+
+    <!-- 查询补货单明细 -->
+    <select id="getSupplementOrderLines" resultType="com.wufanbao.api.distributionservice.entities.SupplementOrderLine">
+        select * from SupplementOrderLine where SupplementOrderId=#{supplementOrderId}
+    </select>
+
+    <!-- 获取补货单上架明细 -->
+    <select id="getShelveDetail" resultType="com.wufanbao.api.distributionservice.transfer.SupplementOrderLineInfo">
+      SELECT
+        m.PutMachineName as MachineName,
+        m.MachineNo,
+        c.companyName,
+        ptg.ProductName,
+        ptg.ProductGlobalId,
+        ptg.IsStaple,
+		sul.SupplementOrderId,
+		sul.quantity,
+		sul.DumpQuantity,
+	    sul.ActualQuantity
+        FROM
+          supplementorderline sul
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = m.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        WHERE sul.SupplementOrderId = #{supplementOrderId} AND ptg.isStaple=#{isStaple}
+    </select>
+    <!-- 获取补货单详情信息 -->
+    <select id="getOrderDetail" resultType="com.wufanbao.api.distributionservice.transfer.SupplementOrderLineInfo">
+        SELECT
+        m.PutMachineName as MachineName,
+        m.MachineNo,
+        c.companyName,
+        sul.SupplementOrderId,
+        sul.ProductGlobalId,
+        sul.Quantity,
+        sul.DumpQuantity,
+        sul.ActualQuantity,
+        sul.BackQuantity,
+        sul.ExceptionQuantity,
+        ptg.ProductName,
+        ptg.isStaple
+        FROM
+        supplementorderline sul
+        LEFT JOIN machine m ON m.MachineId = sul.MachineId
+        LEFT JOIN company c ON c.CompanyId = m.JoinCompanyId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = sul.ProductGlobalId
+        WHERE
+        sul.SupplementOrderId = #{supplementOrderId}
+    </select>
+
+    <!-- 更新补货单明细 终止配送单 -->
+    <update id="updateOrderLineForTermination"
+            parameterType="com.wufanbao.api.distributionservice.entities.SupplementOrderLine">
+        UPDATE supplementorderline SET BackQuantity=#{backQuantity},DumpQuantity=#{dumpQuantity}
+        WHERE SupplementOrderId=#{supplementOrderId} AND ProductGlobalId=#{productGlobalId}
+    </update>
+
+    <!-- 下货商品 -->
+ <update id="dumpProduct">
+     update supplementOrderLine set dumpQuantity=#{dumpQuantity} where supplementOrderId=#{supplementOrderId} and productGlobalId=#{productGlobalId}
+ </update>
+
+    <!-- 上架前仓商品 -->
+    <update id="shelveFrontProducts" parameterType="com.wufanbao.api.distributionservice.entities.SupplementOrderLine">
+       update supplementOrderLine set actualQuantity=#{actualQuantity},backQuantity=#{backQuantity}  where supplementOrderId=#{supplementOrderId} and productGlobalId=#{productGlobalId}
+    </update>
+
+    <!-- 上架后仓商品 -->
+    <update id="shelveBehindProducts" parameterType="com.wufanbao.api.distributionservice.entities.SupplementOrderLine">
+       update supplementOrderLine set backQuantity=#{backQuantity},exceptionQuantity=#{exceptionQuantity}  where supplementOrderId=#{supplementOrderId} and productGlobalId=#{productGlobalId}
+    </update>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/2 time:15:44 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UpdateUserInfoDao">
+    <!--更改用户头像 -->
+    <update id="updateUserName" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        update user set username=#{userName} where userid=#{userId}
+    </update>
+    <!--更改用户名 -->
+    <update id="UpdateUserPortrait" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        update user set portrait=#{portrait} where userid=#{userId}
+    </update>
+    <!--更改手机号 -->
+    <update id="updateUserMb" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        update user set mb=#{mB},loginno=#{loginNo} where userid=#{userId}
+    </update>
+    <!-- 更改支付密码-->
+    <update id="updateUserPayPassword" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        update user set paypassword=#{payPassWord} where userid=#{userId}
+    </update>
+    <update id="updateUserPassword" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        update user set password=#{passWord} where userid=#{userId}
+    </update>
+    <update id="updateUserPasswordByMb">
+        update user set password=#{passWord} where mb=#{mB}
+    </update>
+    <update id="updateUserSex">
+        update user
+        <trim prefix="set" suffixOverrides=",">
+            <if test="sex !=null  and sex !=0">
+                sex=#{sex},
+            </if>
+            <if test="birthday !=null">
+                birthday=#{birthday},
+            </if>
+            <if test="breakFast !=null">
+                breakFast=#{breakFast},
+            </if>
+            <if test="lunch !=null">
+                lunch=#{lunch},
+            </if>
+            <if test="dinner !=null">
+                dinner=#{dinner},
+            </if>
+        </trim>
+        where userId=#{userId}
+    </update>
+    <select id="perfectDegree" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select sex,birthday,breakFast,lunch,dinner,parentUserId from user where userId=#{userId}
+    </select>
+    <!-- 修改账户余额 -->
+    <update id="updateMasterBalance">
+        update user set UsableBalance=(UsableBalance+#{amount}),balance=(balance+#{amount}) where userId=#{userId} and
+        UsableBalance+#{amount}>=0 and balance+#{amount}>=0
+    </update>
+</mapper>

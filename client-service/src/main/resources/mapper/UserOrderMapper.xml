@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.UserOrderDao">
+    <update id="updateMessageStatus">
+        UPDATE userOrder SET messageStatus=1 WHERE userorderid=#{userOrderId}
+    </update>
+    <select id="getMessage" resultType="com.wufanbao.api.clientservice.common.Data">
+        SELECT us.originateid,us.messageStatus,us.status,us.takeNo,u.mb,u.userId FROM userorder AS us LEFT JOIN USER AS u ON us.userid=u.userid WHERE userorderid=#{userOrderId}
+    </select>
+    <select id="getOverdueUserOrder" resultType="com.wufanbao.api.clientservice.common.Data">
+        SELECT
+        u.userOrderId,
+        u.machineId,
+        u.userId,
+        u.messageStatus,
+        u.description,
+        u.status,
+        u.payType,
+        u.createTime,
+        u.completedTime,
+        u.payTime,
+        u.takeNo,
+        u.takeTime,
+        u.assessTime,
+        u.cancelTime,
+        u.refundTime,
+        u.invalidTime,
+        u.originateId,
+        us.mb,
+        us.userId
+        FROM userOrder AS u JOIN USER AS us ON u.userid=us.userid
+        WHERE u.invalidTime>DATE_SUB(NOW(),INTERVAL 2 HOUR ) AND u.status=3
+       AND NOW()>DATE_SUB(u.invalidTime,INTERVAL 30 MINUTE) and u.MessageStatus=0
+    </select>
+    <insert id="insertUserOrder" parameterType="com.wufanbao.api.clientservice.entity.UserOrder">
+        INSERT INTO userorder (userOrderId,joinCompanyId,machineId,userId,
+        imageUrl,
+        description,
+        amount,
+        actualAmount,
+        receiveAmount,
+        status,
+        payType,
+        createTime,
+        takeTime,
+        discountType,
+        discountId,
+        isMadeInvoice,
+        evaluation,
+        easyFind,
+        discountAmount,
+        companyPayAmount,
+        familyPayAmount
+        )values(#{userOrderId},#{joinCompanyId},#{machineId},#{userId},#{imageUrl},
+        #{description},#{amount},#{actualAmount},0,#{status},0,#{createTime},#{takeTime},#{discountType},#{discountId},0,'',0,#{discountAmount},#{companyPayAmount},#{familyPayAmount})
+    </insert>
+    <insert id="insertUserOrderLine" parameterType="com.wufanbao.api.clientservice.entity.UserOrderLine">
+        insert into userorderline(userOrderId,productGlobalId,quantity,actualQuantity,price,tastyDegree)
+        values(#{userOrderId},#{productGlobalId},#{quantity},0,#{price},0)
+    </insert>
+    <update id="cancelUserOrder">
+        update userOrder set status=0,cancelTime=CURRENT_TIMESTAMP WHERE userOrderId=#{userOrderId} and status=2
+    </update>
+    <update id="payUserOrder">
+        update userOrder set status=3,payType=#{payType},invalidTime=#{invalidTime},payTime=CURRENT_TIMESTAMP WHERE
+        userOrderId=#{userOrderId}
+    </update>
+    <update id="notifyPayUserOrder">
+        update userOrder set
+        status=3,payType=#{payType},receiveAmount=#{receiveAmount},invalidTime=#{invalidTime},payTime=CURRENT_TIMESTAMP
+        WHERE userOrderId=#{userOrderId}
+    </update>
+    <update id="updateOriginateId">
+        UPDATE userorder SET originateId=#{originateId} WHERE userorderid=#{userOrderId}
+    </update>
+    <update id="notifyPayUserOrderInvalid">
+        update userOrder set
+        payType=#{payType},receiveAmount=#{receiveAmount},invalidTime=#{invalidTime},payTime=CURRENT_TIMESTAMP
+        WHERE userOrderId=#{userOrderId}
+    </update>
+    <insert id="insertUserOrderCapital">
+        insert into userordercapital (userOrderId,capitalType,sourceType,sourceId,amount,description,createTime)
+        values(#{userOrderId},#{capitalType},#{sourceType},#{sourceId},#{amount},#{description},CURRENT_TIMESTAMP)
+    </insert>
+    <insert id="refundUserOrderCapital">
+        update userordercapital set refund=1,refundAmount=#{refundAmount},refundTime=CURRENT_TIMESTAMP where
+        userOrderId=#{userOrderId} and capitalType=#{capitalType}
+    </insert>
+    <update id="assessUserOrder">
+        update userOrder set status=7,assessTime=CURRENT_TIMESTAMP WHERE userOrderId=#{userOrderId} and status=6
+    </update>
+    <update id="assessUserOrderLine" parameterType="com.wufanbao.api.clientservice.entity.UserOrderLine">
+        update userorderline set tastyDegree=#{tastyDegree},evaluation=#{evaluation} where userOrderId=#{userOrderId}
+        and productGlobalId=#{productGlobalId};
+    </update>
+    <update id="invalidUserOrder">
+        update userorder set Status=-2,completedTime=CURRENT_TIMESTAMP where invalidTime &lt; CURRENT_TIMESTAMP AND
+        status=-1 and userOrderId=#{userOrderId}
+    </update>
+    <update id="refundUserOrder">
+        update userOrder set status=-1,refundTime=CURRENT_TIMESTAMP WHERE userOrderId=#{userOrderId}
+    </update>
+    <update id="refundUserOrderinvalid">
+        update userOrder set status=-1,payType=#{payType},refundTime=CURRENT_TIMESTAMP WHERE payType=0 and userOrderId=#{userOrderId}
+    </update>
+    <update id="updateStatus">
+        update userOrder set status=-3 WHERE userOrderId=#{userOrderId} and status=-1
+    </update>
+    <update id="refundedUserOrder">
+        update userOrder set status=-3 WHERE userOrderId=#{userOrderId}
+    </update>
+    <select id="getUserOrderLines" resultType="com.wufanbao.api.clientservice.entity.UserOrderLine">
+        select
+        u.userOrderId,
+        u.tastyDegree,
+        u.evaluation,
+        u.quantity,
+        u.price,
+        u.actualQuantity,
+        u.productGlobalId,
+        u.remark
+        from userorderline as u where u.userOrderId=#{userOrderId}
+    </select>
+    <select id="getUserOrderLineAndProducts" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        ul.userOrderId,
+        ul.quantity,
+        ul.price,
+        ul.productGlobalId,
+        pg.isStaple,
+        pg.productName
+        from userorderline as ul
+        join productglobal as pg ON pg.productGlobalId = ul.productGlobalId
+        where ul.userorderId= #{userOrderId};
+    </select>
+    <select id="getAssessUserOrderLineAndProducts" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        ul.userOrderId,
+        ul.evaluation,
+        ul.tastyDegree,
+        ul.productGlobalId,
+        pg.isStaple,
+        pg.attachImageUrls,
+        pg.productName
+        from userorderline as ul
+        join productglobal as pg ON pg.productGlobalId = ul.productGlobalId
+        where ul.userorderId= #{userOrderId};
+    </select>
+    <select id="getUserOrderProductLines" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        ul.userOrderId,
+        ul.userOrderProductLineId,
+        ul.productGlobalId,
+        pg.isStaple,
+        pg.productName,
+        po.quantity,
+        po.status
+        from userorderproductline as ul
+        left join productoff as po on po.productOffId=ul.productOffId
+        join productglobal as pg ON pg.productGlobalId = ul.productGlobalId
+        where ul.userorderId= #{userOrderId};
+    </select>
+    <select id="getUserOrderProductLine" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        ul.userOrderId,
+        ul.userOrderProductLineId,
+        ul.productGlobalId,
+        po.quantity,
+        po.status
+        from userorderproductline as ul
+        join productoff as po on po.productOffId=ul.productOffId
+        where ul.userOrderProductLineId= #{userOrderProductLineId};
+    </select>
+    <insert id="inserUserOrderProductLine" parameterType="com.wufanbao.api.clientservice.entity.UserOrderProductLine">
+        insert into userorderproductline(userOrderProductLineId,userOrderId,productGlobalId,productOffId) values
+        (#{userOrderProductLineId},#{userOrderId},#{productGlobalId},#{productOffId})
+    </insert>
+    <select id="getUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        ur.invalIdTime as invalIdTime,
+        ur.imageUrl as imageUrl,
+        ur.description as description,
+        ur.status as status,
+        ur.userOrderId as userOrderId,
+        ur.createTime as createTime,
+        ur.discountId as discountId,
+        ur.payType as payType,
+        ur.payTime as payTime,
+        ur.takeTime as takeTime,
+        ur.amount as amount,
+        ur.actualAmount as actualAmount,
+        m.address as address,
+        m.machineId as machineId
+        from userorder ur
+        inner join machine m on ur.machineId = m.machineId where ur.userId=#{userId} and ur.status!=0 order by createTime desc limit
+        #{pageStart},#{pageSize};
+    </select>
+    <select id="getPayUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        ur.invalIdTime as invalIdTime,
+        ur.imageUrl as imageUrl,
+        ur.description as description,
+        ur.status as status,
+        ur.userOrderId as userOrderId,
+        ur.createTime as createTime,
+        ur.discountId as discountId,
+        ur.payType as payType,
+        ur.payTime as payTime,
+        ur.takeTime as takeTime,
+        ur.amount as amount,
+        ur.actualAmount as actualAmount,
+        m.address as address,
+        m.machineId as machineId
+        from userorder ur
+        inner join machine m on ur.MachineId = m.MachineId where ur.userId=#{userId} and ur.status=2 order by createTime
+        desc limit #{pageStart},#{pageSize};
+    </select>
+    <select id="getPaidUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        ur.invalIdTime as invalIdTime,
+        ur.imageUrl as imageUrl,
+        ur.description as description,
+        ur.status as status,
+        ur.userOrderId as userOrderId,
+        ur.createTime as createTime,
+        ur.discountId as discountId,
+        ur.payType as payType,
+        ur.payTime as payTime,
+        ur.takeTime as takeTime,
+        ur.amount as amount,
+        ur.actualAmount as actualAmount,
+        m.address as address,
+        m.machineId as machineId
+        from userorder ur
+        inner join machine m on ur.machineId = m.machineId where ur.userId=#{userId} and ur.status=3 order by createTime
+        desc limit #{pageStart},#{pageSize};
+    </select>
+    <select id="getAssessUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        ur.invalIdTime as invalIdTime,
+        ur.imageUrl as imageUrl,
+        ur.description as description,
+        ur.status as status,
+        ur.userOrderId as userOrderId,
+        ur.createTime as createTime,
+        ur.discountId as discountId,
+        ur.payType as payType,
+        ur.payTime as payTime,
+        ur.takeTime as takeTime,
+        ur.amount as amount,
+        ur.actualAmount as actualAmount,
+        m.address as address,
+        m.machineId as machineId
+        from userorder ur
+        inner join machine m on ur.machineId = m.machineId where ur.userId=#{userId} and ur.status=6 order by createTime
+        desc limit #{pageStart},#{pageSize};
+    </select>
+    <select id="getInvalidUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        ur.invalIdTime as invalIdTime,
+        ur.imageUrl as imageUrl,
+        ur.description as description,
+        ur.status as status,
+        ur.userOrderId as userOrderId,
+        ur.createTime as createTime,
+        ur.discountId as discountId,
+        ur.payType as payType,
+        ur.payTime as payTime,
+        ur.takeTime as takeTime,
+        ur.amount as amount,
+        ur.actualAmount as actualAmount,
+        m.address as address,
+        m.machineId as machineId
+        from userorder ur
+        inner join machine m on ur.machineId = m.machineId where ur.userId=#{userId} and (ur.status=-2 or ur.status=-1
+        or ur.status=-3) order by createTime desc limit #{pageStart},#{pageSize};
+    </select>
+    <select id="getInvalidUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        userOrderId,status,companyPayAmount,familyPayAmount,receiveAmount,actualAmount,isMadeInvoice,payType,userId,discountId
+        from userorder where InvalidTime &lt; CURRENT_TIMESTAMP AND date_sub(CURDATE(),INTERVAL 2 DAY) &lt;=
+        (DATE(CreateTime)) AND status=3 and UserOrderId!=#{userOrderId} order by InvalidTime DESC
+    </select>
+    <select id="getMakingUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        userOrderId,machineId,status,companyPayAmount,familyPayAmount,receiveAmount,actualAmount,isMadeInvoice,payType,userId,discountId,takeTime
+        from userorder where date_sub(CURDATE(),INTERVAL 2 DAY) &lt;= (DATE(TakeTime)) and status=4 and
+        UserOrderId!=#{userOrderId} order by takeTime desc
+    </select>
+    <select id="exitUnCompleteUserOrder" resultType="int">
+        select count(1) from userOrder where userId=#{userId} and (status=3 or status=4 ) limit 1;
+    </select>
+    <select id="getUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        u.userOrderId,
+        u.joinCompanyId,
+        u.machineId,
+        u.userId,
+        u.imageUrl,
+        u.description,
+        u.amount,
+        u.actualAmount,
+        u.receiveAmount,
+        u.status,
+        u.payType,
+        u.createTime,
+        u.completedTime,
+        u.payTime,
+        u.takeNo,
+        u.takeTime,
+        u.assessTime,
+        u.cancelTime,
+        u.refundTime,
+        u.invalidTime,
+        u.discountType,
+        u.discountId,
+        u.isMadeInvoice,
+        u.evaluation,
+        u.easyFind,
+        u.discountAmount,
+        u.companyPayAmount,
+        u.familyPayAmount,
+        u.originateId
+        from userOrder as u where u.userOrderId=#{userOrderId}
+    </select>
+    <select id="getTakeUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select userOrderId,description,payTime,status from userOrder where machineId=#{machineId} and userId=#{userId}
+        and status =3
+    </select>
+    <select id="getToPayUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        u.userOrderId,
+        u.joinCompanyId,
+        u.machineId,
+        u.userId,
+        u.imageUrl,
+        u.description,
+        u.amount,
+        u.actualAmount,
+        u.receiveAmount,
+        u.status,
+        u.payType,
+        u.createTime,
+        u.completedTime,
+        u.payTime,
+        u.takeNo,
+        u.takeTime,
+        u.assessTime,
+        u.cancelTime,
+        u.refundTime,
+        u.invalidTime,
+        u.discountType,
+        u.discountId,
+        u.isMadeInvoice,
+        u.evaluation,
+        u.easyFind,
+        u.discountAmount,
+        u.companyPayAmount,
+        u.familyPayAmount,
+        u.originateId
+        from userorder as u where u.status=2 and u.UserOrderId!=#{userOrderId} AND date_sub(CURDATE(),INTERVAL 3 DAY)
+        &lt;= (DATE(u.createTime)) order by u.CreateTime;
+    </select>
+    <select id="getUserOrderDetail" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        uo.userOrderId,
+        uo.machineId,
+        uo.userId,
+        uo.description,
+        uo.amount,
+        uo.actualAmount,
+        uo.receiveAmount,
+        uo.status,
+        uo.payType,
+        uo.createTime,
+        uo.completedTime,
+        uo.payTime,
+        uo.takeNo,
+        uo.takeTime,
+        uo.assessTime,
+        uo.cancelTime,
+        uo.refundTime,
+        uo.invalidTime,
+        uo.discountType,
+        uo.discountId,
+        uo.isMadeInvoice,
+        uo.evaluation,
+        uo.easyFind,
+        uo.discountAmount,
+        uo.companyPayAmount,
+        uo.familyPayAmount,
+        uo.originateId,m.putMachineName,m.address,m.X,m.Y,m.status,m.isActive,m.seekPhotos,m.inMaintenance from
+        userOrder as uo join machine as m on uo.machineId=m.machineId where UserOrderId=#{userOrderId}
+    </select>
+    <select id="getImagesShare" resultType="com.wufanbao.api.clientservice.entity.ImagesShare">
+        select i.description,i.isActive,i.imagesShareId,i.shareImage,i.showImage,i.url from imagesshare as i order by
+        rand() limit 1
+    </select>
+    <select id="findUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        SELECT
+        u.userOrderId,
+        u.machineId,
+        u.userId,
+        u.imageUrl,
+        u.description,
+        u.amount,
+        u.actualAmount,
+        u.receiveAmount,
+        u.status,
+        u.payType,
+        u.createTime,
+        u.completedTime,
+        u.payTime,
+        u.takeNo,
+        u.takeTime,
+        u.assessTime,
+        u.cancelTime,
+        u.refundTime,
+        u.invalidTime,
+        u.originateId
+        FROM userorder AS u WHERE userorderid=#{userOrderId}
+    </select>
+    <select id="getUserMb" resultType="String">
+        SELECT u.mb FROM USER AS u LEFT JOIN userorder AS us ON u.userid=us.userid WHERE us.userorderid=#{userOrderId}
+    </select>
+
+</mapper>

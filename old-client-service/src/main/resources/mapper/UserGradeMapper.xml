@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserGradeDao">
+    <!--用户成长值增长-->
+    <update id="gradeGrowUp">
+        update user set GradeValue=(GradeValue+#{gain}) where userId=#{userId}
+    </update>
+    <!--插入用户成长值记录 -->
+    <insert id="insertGradeLog">
+        insert into usergradelog values(#{userGradeLogId},#{userId},#{gain},(select GradeValue from user where
+        userId=#{userId}),#{sourceType},#{sourceId},CURRENT_TIMESTAMP,#{description})
+    </insert>
+    <!--查询用户等级名称-->
+    <select id="getUserGradeName" resultType="java.lang.String">
+        select GradeName from usergrade where StartValue &lt;=#{gradeValue} and EndValue>=#{gradeValue};
+    </select>
+    <select id="userRanking" resultType="java.lang.Double">
+        select(SELECT rowNo FROM (SELECT userId,(@rowNum:=@rowNum+1) AS rowNo FROM user,(SELECT (@rowNum:=0)) b ORDER BY
+        GradeValue asc) c WHERE userId=#{userId})/(select COUNT(userId) from user)
+
+    </select>
+    <select id="getUserGrade" resultType="com.wufanbao.api.oldclientservice.entity.UserGrade">
+        select *,(select GradeValue from user where UserId=#{userId}) as gradeValue from usergrade
+        where StartValue &lt;=(select GradeValue from user where UserId=#{userId}) and EndValue>=(select GradeValue from
+        user where UserId=#{userId}) ;
+    </select>
+    <select id="getUserGradePlusOne" resultType="com.wufanbao.api.oldclientservice.entity.UserGrade">
+        select * from userGrade where gradeNum=#{gradeNum}
+    </select>
+    <select id="getUserGradePrivilege" resultType="com.wufanbao.api.oldclientservice.entity.UserGradePrivilege">
+        select * from usergradeprivilege where UserGradeId=#{userGradeId} and privilege=#{privilege}
+    </select>
+    <select id="getUserGradeLog" resultType="java.lang.String">
+        select sourceType from usergradelog where userId=#{userId} and SourceType=#{sourceType};
+    </select>
+    <select id="ifGet" resultType="java.lang.Boolean">
+        select if(count(userId)=0,0,1) as ifGet from usercoupon where to_days(CreateTime) = to_days(now()) and
+        userId=#{userId} and coupondefinitionId=#{couponDefinitionId}
+    </select>
+</mapper>

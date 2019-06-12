@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.MyUserOrderDao">
+    <insert id="insertUserOrder" parameterType="com.wufanbao.api.oldclientservice.entity.UserOrder">
+        INSERT INTO userorder (userOrderId,joinCompanyId,machineId,userId,
+        description,
+        amount,
+        actualAmount,
+        ReceiveAmount,
+        status,
+        PayType,
+        createTime,
+        InvalidTime,
+        discountType,
+        discountId,
+        isMadeInvoice,
+        evaluation,
+        easyFind,
+        discountAmount,
+        companyPayAmount,
+        familyPayAmount
+        )
+        VALUES
+        (#{userOrderId},#{joinCompanyId},#{machineId},#{userId},
+        #{description},#{amount},#{actualAmount},0,#{status},0,#{createTime},#{InvalidTime},#{discountType},#{discountId},0,'',0,#{discountAmount},#{companyPayAmount},#{familyPayAmount})
+    </insert>
+</mapper>

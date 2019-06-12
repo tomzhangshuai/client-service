@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.distributionservice.dao.SupplementOrderDao">
+
+    <!-- 查询订单状态 -->
+    <select id="getOrderStatus" resultType="int">
+        select SupplementStatus from supplementorder where SupplementOrderId=#{supplementOrderId};
+    </select>
+
+    <!-- 查询订单数据 -->
+    <select id="getOrder" resultType="com.wufanbao.api.distributionservice.entities.SupplementOrder">
+        select * from supplementorder where SupplementOrderId=#{supplementOrderId};
+    </select>
+
+    <!--查询订单的机器ID -->
+    <select id="getMachineId" resultType="long">
+        select machineId from supplementorder where SupplementOrderId=#{supplementOrderId};
+    </select>
+
+    <!-- 回退状态 -->
+    <update id="backStatus">
+        update supplementorder set SupplementStatus=SupplementStatus-1 where SupplementOrderId=#{supplementOrderId}
+    </update>
+
+    <!-- 设置补货单状态 -->
+    <update id="setSupplementStatus">
+        update supplementorder set SupplementStatus=#{status} where SupplementOrderId=#{supplementOrderId} and SupplementStatus!=#{status}
+    </update>
+
+    <!-- 是否存在机器ID 的补货单 -->
+    <select id="isExistSupplementOrder" resultType="int">
+        select count(*) from supplementOrder where supplementOrderId=#{supplementOrderId} and machineId=#{machineId}
+    </select>
+    <!--更新补货单结束时间-->
+    <update id="setSupplementCompletedTime">
+    UPDATE supplementorder SET CompletedTime=CURRENT_TIMESTAMP WHERE SupplementOrderId=#{supplementOrderId}
+    </update>
+</mapper>

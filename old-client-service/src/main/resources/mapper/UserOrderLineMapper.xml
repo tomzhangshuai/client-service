@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserOrderLineDao">
+    <resultMap id="PaymentOrder" type="com.wufanbao.api.oldclientservice.entity.PaymentOrder" autoMapping="true">
+        <result column="UserOrderId" property="userOrderId"/>
+        <result column="quantity" property="quantity"/>
+        <result column="actualQuantity" property="actualQuantity"/>
+        <result column="price" property="price"/>
+        <result column="ProductName" property="ProductName"/>
+        <result column="isStaple" property="isStaple"/>
+        <result column="imageUrl" property="imageUrl"/>
+        <result column="createTime" property="createTime"/>
+        <result column="amount" property="amount"/>
+        <result column="discountId" property="discountId"/>
+        <result column="address" property="address"/>
+        <result column="discountAmount" property="discountAmount"/>
+        <result column="companyPayAmount" property="companyPayAmount"/>
+        <result column="familyPayAmount" property="familyPayAmount"/>
+
+
+        <collection property="userCoupon" ofType="com.wufanbao.api.oldclientservice.entity.UserCoupon">
+            <result column="couponId" property="couponId"/>
+            <result column="couponDefinitionId" property="couponDefinitionId"/>
+            <result column="userId" property="userId"/>
+            <result column="status" property="status"/>
+            <result column="createTime" property="createTime"/>
+            <result column="startTime" property="startTime"/>
+            <result column="endTime" property="endTime"/>
+        </collection>
+    </resultMap>
+    <select id="queryOrderLine" resultMap="PaymentOrder">
+        SELECT
+        uo.UserOrderId,
+        uol.Quantity,
+        uol.ActualQuantity,
+        uol.Price,
+        ptg.productName,
+        ptg.isStaple,
+        ptg.imageUrl,
+        uo.CreateTime,
+        uo.discountId,
+        uo.discountAmount as discountAmount,
+        uo.companyPayAmount as companyPayAmount,
+        uo.familyPayAmount as familyPayAmount,
+        cdf.Amount as amount,
+        uc.*,
+        m.Address
+        FROM
+        userorder uo
+        LEFT JOIN userorderline uol ON uo.UserOrderId = uol.UserOrderId
+        LEFT JOIN machine m ON m.MachineId = uo.MachineId
+        LEFT JOIN productglobal ptg ON ptg.ProductGlobalId = uol.ProductGlobalId
+        LEFT JOIN user us ON us.UserId = uo.UserId
+        LEFT JOIN usercoupon uc ON uc.UserId = us.UserId AND uc.CouponId = uo.DiscountId
+        LEFT JOIN coupondefinition cdf ON cdf.CouponDefinitionId = uc.CouponDefinitionId
+        WHERE uo.UserOrderId=#{userOrderId}
+    </select>
+    <select id="queryOrder" resultType="com.wufanbao.api.oldclientservice.entity.UserOrderin">
+        SELECT
+        ur.INVALIDTIME as invalIdTime,
+        ur.DESCRIPTION as description,
+        ur. STATUS as status,
+        ur.UserOrderId as userOrderId,
+        ur.CreateTime as createTime,
+        ur.DISCOUNTID as discountId,
+        ur.Amount as amount,
+        ur.ActualAmount as actualAmount,
+        m.Address as address,
+        cd.Amount as CouponAmount
+        FROM
+        userorder ur
+        INNER JOIN machine m ON ur.MachineId = m.MachineId
+        LEFT JOIN usercoupon uc ON ur.DiscountId = uc.CouponId
+        LEFT JOIN COUPONDEFINITION cd ON uc.CouponDefinitionId = cd.CouponDefinitionId where ur.STATUS=2 and
+        ur.UserId=#{userId}
+    </select>
+    <insert id="insertOrderLine" parameterType="com.wufanbao.api.oldclientservice.entity.UserOrderLine">
+        insert into userorderline(userOrderId,productGlobalId,quantity,actualQuantity,price,tastyDegree)
+        values(#{userOrderId},#{productGlobalId},#{quantity},0,#{price},0)
+    </insert>
+</mapper>

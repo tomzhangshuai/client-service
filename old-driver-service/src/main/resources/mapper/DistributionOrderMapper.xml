@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.DistributionOrderDao">
+    <!-- 获取配送单信息-->
+    <select id="getDistributionOrderByEmployeeId"
+            resultType="com.wufanbao.api.olddriverservice.entity.DistributionOrderInfo">
+        SELECT
+        d.distributionOrderId as distributionOrderId,
+        d.BEGINDISTRIBUTETIME as startTime,
+        d.ENDDISTRIBUTETIME as endTime,
+        d.IsTermination as isTermination,
+        d.Status as status,
+        c.PlateNo as plateNo
+        FROM
+        DISTRIBUTIONORDER d
+        left join COMPANYVEHICLE c on c.VehicleId=d.VehicleId
+        WHERE
+        d.Status &gt;>2 and d.Status &lt;=6
+        and
+        d.DistributeEmployeeId=#{distributeEmployeeId} order by d.Status asc
+    </select>
+    <!-- 获取历史订单信息-->
+    <select id="getHistoricalShippingOrder" resultType="com.wufanbao.api.olddriverservice.entity.DistributionOrderInfo">
+        SELECT
+        d.distributionOrderId as distributionOrderId,
+        d.BEGINDISTRIBUTETIME as startTime,
+        d.ENDDISTRIBUTETIME as endTime,
+        d.IsTermination as isTermination,
+        d.Status as status,
+        c.PlateNo as plateNo
+        FROM
+        DISTRIBUTIONORDER d
+        left join COMPANYVEHICLE c on c.VehicleId=d.VehicleId
+        WHERE
+        d.Status &gt;=7 and
+        d.DistributeEmployeeId=#{distributeEmployeeId}
+    </select>
+    <!--  根据配送单id查询机器数量 -->
+    <select id="getDeviceNumber" resultType="int">
+        select COUNT(SupplementOrderId) as deviceNumber from DISTRIBUTIONORDERLINE where
+        DistributionOrderId=#{distributionOrderId}
+    </select>
+    <!-- 根据配送单id查看货物数量 -->
+    <select id="getCargoQuantity" resultType="int">
+        select IFNULL (SUM(Quantity), 0) as cargoQuantity from DISTRIBUTIONPRODUCTLINE where
+        DistributionOrderId=#{distributionOrderId}
+    </select>
+    <!-- 修改配送单状态-->
+    <update id="updateDeliverStatus">
+        update distributionorder set status=#{status} where DistributionOrderId=#{distributionOrderId}
+    </update>
+    <update id="confirmDeliverStatus">
+        update distributionorder set status=#{status},EndDistributeTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId}
+    </update>
+    <!--出发 -->
+    <update id="depart">
+        update distributionorder set status=#{status},BeginDistributeTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId}
+    </update>
+    <!--中止订单 -->
+    <update id="TerminationDeliver">
+        update distributionorder set Status=6,isTermination=1,remark=#{remark},EndDistributeTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId} and Status&lt;6
+    </update>
+    <!--终止配送单和补货单的关系 -->
+    <update id="TerminationLine">
+        update distributionorderLine set IsTerminate=1 where DistributionOrderId=#{distributionOrderId} and
+        IsDistributed=0
+    </update>
+    <!--确认配送单信息-->
+    <select id="confirmDeliveryOrder" resultType="com.wufanbao.api.olddriverservice.entity.ConfirmDeliveryOrderInfo">
+        select d.*,p.ProductName as productName,p.isStaple as isStaple,p.CategoryId as categoryId,d.ExceptionQuantity as
+        exceptionQuantity from distributionproductline d inner join productglobal p on
+        d.ProductGlobalId=p.ProductGlobalId where d.DistributionOrderId=#{distributionOrderId}
+    </select>
+    <!-- 查询是否有未完成的订单-->
+    <select id="checkUnfinishedDelivery" resultType="com.wufanbao.api.olddriverservice.entity.DistributionOrder">
+        select DistributionOrderId from distributionorder where DistributeEmployeeId=#{employeeId} and status=5;
+    </select>
+    <!--查询配送单正在配送中的补货单-->
+    <select id="getDistributingSupplementOrder" resultType="com.wufanbao.api.olddriverservice.entity.SupplementOrder">
+        select l.SupplementOrderId,s.SupplementStatus from distributionorderline l left join supplementorder s on
+        l.SupplementOrderId=s.SupplementOrderId where l.DistributionOrderId=#{distributionOrderId} and
+        s.SupplementStatus&gt; 4 and s.SupplementStatus&lt;10
+    </select>
+
+</mapper>

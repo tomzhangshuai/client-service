@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.MessageDao">
+    <select id="getMessages" resultType="com.wufanbao.api.clientservice.entity.MessageInfo">
+        select
+        mi.isActive,
+        mi.createTime,
+        mi.content,
+        mi.messageInfoId,
+        mi.contentType,
+        mi.messageType,
+        um.isRead as isRead,um.isDeleted as isDeleted from messageInfo mi INNER JOIN usermessage um on
+        um.messageInfoId=mi.messageInfoId where um.isDeleted=#{isDelete} and um.isRead=#{isRead} and um.userId=#{userId}
+    </select>
+</mapper>

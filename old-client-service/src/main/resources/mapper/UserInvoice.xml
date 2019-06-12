@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/2 time:14:38 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserInvoiceDao">
+    <select id="getUserInvoiceInfo" parameterType="com.wufanbao.api.oldclientservice.entity.UserInvoice"
+            resultType="com.wufanbao.api.oldclientservice.entity.UserInvoice">
+        select * from userinvoice where userid=#{userId}
+    </select>
+    <select id="getOrder" parameterType="com.wufanbao.api.oldclientservice.entity.UserInvoice"
+            resultType="com.wufanbao.api.oldclientservice.entity.UserOrder">
+        SELECT o.Description as description,o.ActualAmount as actualAmount,o.CompletedTime as completedTime from
+        userinvoiceorder i inner join userorder o on i.UserOrderId=o.UserOrderId where UserInvoiceId=#{userInvoiceId}
+    </select>
+    <insert id="insertOrder" parameterType="com.wufanbao.api.oldclientservice.entity.UserInvoice">
+        insert into userinvoice
+        (userInvoiceId,userId,invoiceType,invoiceAmount,content,buyerType,buyerName,buyerTaxId,buyerAc,buyerAccount,remark,email,recipient,contactNumber,areaId,address,invoiceStatus,createTime,areaName)
+        values(#{userInvoiceId},#{userId},#{invoiceType},#{invoiceAmount},#{content},#{buyerType},#{buyerName},#{buyerTaxId},#{buyerAc},#{buyerAccount},#{remark},#{email},#{recipient},#{contactNumber},#{areaId},#{address},1,CURRENT_TIMESTAMP,#{areaName})
+    </insert>
+</mapper>

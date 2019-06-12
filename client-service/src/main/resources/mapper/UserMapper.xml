@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.UserDao">
+
+    <select id="getUser" resultType="com.wufanbao.api.clientservice.entity.User">
+        select
+        u.userId,
+        u.parentUserId,
+        u.userName,
+        u.loginNo,
+        u.password,
+        u.payPassword,
+        u.userType,
+        u.mb,
+        u.email,
+        u.integral,
+        u.balance,
+        u.usableBalance,
+        u.lockBalance,
+        u.invitationCode,
+        u.isActive,
+        u.createTime,
+        u.resetPasswordNeeded,
+        u.isAuth,
+        u.isCredit,
+        u.creditAmount,
+        u.creditLimit,
+        u.creditUasbelAmount,
+        u.portrait,
+        u.remark,
+        u.companyPayment,
+        u.sex,
+        u.birthday,
+        u.breakfast,
+        u.lunch,
+        u.dinner,
+        u.gradeValue
+        from user as u where u.userId=#{userId};
+    </select>
+    <select id="getUserGradeValue" resultType="com.wufanbao.api.clientservice.entity.User">
+        select gradeValue from user where userId=#{userId};
+    </select>
+    <select id="getUserGradePrivilege" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        u.endValue,
+        u.gradeImages,
+        u.gradeName,
+        u.gradeNum,
+        u.privilege,
+        u.startValue,
+        u.userGradeId,
+        l.content,
+        l.privilege
+        from usergrade as u join usergradeprivilege as l on u.userGradeId=l.userGradeId where u.startValue &lt;=
+        #{gradeValue} and u.endValue>=#{gradeValue} and l.privilege=#{privilege};
+    </select>
+
+    <update id="updateUserbindingOpenId">
+        UPDATE userbinding SET openId=#{openId} where userid=#{userId}
+    </update>
+
+    <update id="perfectUser">
+        update user
+        <trim prefix="set" suffixOverrides=",">
+            <if test="sex !=null  and sex !=0">
+                sex=#{sex},
+            </if>
+            <if test="userName !=null and userName.length()>0">
+                userName=#{userName},
+            </if>
+            <if test="birthday !=null">
+                birthday=#{birthday},
+            </if>
+            <if test="breakFast !=null">
+                breakFast=#{breakFast},
+            </if>
+            <if test="lunch !=null">
+                lunch=#{lunch},
+            </if>
+            <if test="dinner !=null">
+                dinner=#{dinner},
+            </if>
+        </trim>
+        where userId=#{userId}
+    </update>
+    <select id="getUserCouponSize" resultType="int">
+        select count(1) from usercoupon where status=1 and CURRENT_TIMESTAMP &lt; endTime and userid=#{userId};
+    </select>
+    <select id="getUserMessgeSize" resultType="int">
+        select count(1) from usermessage where isRead=0 AND userid=#{userId};
+    </select>
+    <insert id="addUserMessage">
+        insert into usermessage set(MessageInfoId,userId,isRead,isDeleted) values(#{messageInfoId},#{userId},0,0)
+    </insert>
+    <select id="getUserMessages" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        um.userId,
+        um.isDeleted,
+        um.isRead,
+        um.messageInfoId
+        from usermessage as um join messageInfo as mi on um.messageInfoId=mi.messageInfoId where um.userId=#{userId} and
+        um.isRead=#{isRead} order by createTime desc limit #{pageStart},#{pageSize};
+    </select>
+    <update id="setUserMessgeRead">
+        update usermessage set isRead=1 where isRead=0 AND userId=#{userId}
+    </update>
+    <update id="setUserMessgeDelete">
+        update usermessage set isDeleted=1 where isDeleted=0 AND userId=#{userId}
+    </update>
+    <select id="getUserCapitallogs" resultType="com.wufanbao.api.clientservice.entity.UserCapitalLog">
+        select
+        u.userId,
+        u.createTime,
+        u.balance,
+        u.description,
+        u.amount,
+        u.sourceId,
+        u.sourceType,
+        u.userCapitalLogId
+        from usercapitallog as u where u.userId=#{userId} and DATE_FORMAT(u.createTime, '%Y%m' )=DATE_FORMAT(#{month},
+        '%Y%m') order by u.createTime desc;
+    </select>
+    <select id="getUserCapitallogBysourceType" resultType="com.wufanbao.api.clientservice.entity.UserCapitalLog">
+        select
+        u.userId,
+        u.createTime,
+        u.balance,
+        u.description,
+        u.amount,
+        u.sourceId,
+        u.sourceType,
+        u.userCapitalLogId
+        from usercapitallog as u where u.SourceId=#{userOrderId} and u.sourceType=#{sourceType}
+    </select>
+    <select id="getSonUserCapitalLogs" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        uc.userCapitalLogId,
+        uc.sourceType,
+        uc.sourceId,
+        uc.amount,
+        uc.description,
+        uc.balance,
+        uc.createTime,
+        uc.userId,uo.familyPayAmount from userCapitalLog as uc join userOrder as uo on uc.sourceId=uo.userOrderId where
+        (uc.sourceType='familyPay' or uc.sourceType='familyRefund') and uo.familyPayAmount>0 and uo.userId=#{userId} and
+        DATE_FORMAT(uc.createTime, '%Y%m' )=DATE_FORMAT(#{month}, '%Y%m') order by uc.createTime desc;
+    </select>
+    <select id="getUserIntegralLogs" resultType="com.wufanbao.api.clientservice.entity.UserIntegralLog">
+        select
+        u.userId,
+        u.createTime,
+        u.balance,
+        u.description,
+        u.sourceType,
+        u.quantity,
+        u.integralLogId,
+        u.SourceTypeId
+        from userIntegralLog as u where u.userId=#{userId} order by u.createTime desc limit #{pageStart},#{pageSize}
+    </select>
+    <update id="useBalance">
+        update user set usableBalance=(usableBalance-#{amount}),balance=(balance-#{amount}) where userId=#{userId} and
+        usableBalance-#{amount}>=0 and balance-#{amount}>=0
+    </update>
+    <update id="recharge">
+        update user set usableBalance=(usableBalance+#{amount}),balance=(balance+#{amount}) where userId=#{userId}
+    </update>
+    <update id="refundBalance">
+        update user set usableBalance=(usableBalance+#{amount}),balance=(balance+#{amount}) where userId=#{userId}
+    </update>
+    <select id="getUserByLoginNo" resultType="com.wufanbao.api.clientservice.entity.User">
+        select
+        u.userId,
+        u.parentUserId,
+        u.userName,
+        u.loginNo,
+        u.password,
+        u.payPassword,
+        u.userType,
+        u.mb,
+        u.email,
+        u.integral,
+        u.balance,
+        u.usableBalance,
+        u.lockBalance,
+        u.invitationCode,
+        u.isActive,
+        u.createTime,
+        u.resetPasswordNeeded,
+        u.isAuth,
+        u.isCredit,
+        u.creditAmount,
+        u.creditLimit,
+        u.creditUasbelAmount,
+        u.portrait,
+        u.remark,
+        u.companyPayment,
+        u.sex,
+        u.birthday,
+        u.breakfast,
+        u.lunch,
+        u.dinner,
+        u.gradeValue from user as u where u.loginNo=#{loginNo};
+    </select>
+    <update id="updateUserMb">
+    update user set mb=#{loginNo},loginNo=#{loginNo} where userid=#{userId}
+    </update>
+    <select id="getUserBindingByBindingId" resultType="com.wufanbao.api.clientservice.entity.UserBinding">
+        select
+        u.userId,
+        u.bindingId,
+        u.bindingTime,
+        u.bindingType
+        from userBinding as u where u.BindingId=#{bindingId} and u.UserId>0;
+    </select>
+    <select id="getBindingIdByUserId" resultType="java.lang.String">
+        select bindingId from userbinding where UserId=#{userId}
+    </select>
+
+    <insert id="insertUserBinding">
+        insert into userbinding(userId,bindingId,bindingType,bindingTime)
+        values(#{userId},#{bindingId},#{bindingType},CURRENT_TIMESTAMP)
+    </insert>
+
+    <insert id="insertUserBindingOpenId">
+        insert into userbinding(userId,bindingId,openId,bindingType,bindingTime)
+        values(#{userId},#{bindingId},#{openId},#{bindingType},CURRENT_TIMESTAMP)
+    </insert>
+
+    <delete id="deleteUserBinding">
+        delete from userbinding where userId=#{userId} and bindingId=#{bindingId}
+    </delete>
+
+    <insert id="insertUser" parameterType="com.wufanbao.api.clientservice.entity.User">
+        INSERT INTO
+        user(userId,parentUserId,userName,loginNo,password,payPassword,userType,mb,portrait,invitationCode,isActive,createTime,resetPasswordNeeded,isAuth,isCredit,companyPayment,
+        integral,balance,usableBalance,lockBalance,creditAmount,creditUasbelAmount,creditLimit)
+        VALUES
+        (#{userId},#{parentUserId},#{userName},#{loginNo},#{password},#{payPassword},#{userType},#{mb},#{portrait},#{invitationCode},#{isActive},CURRENT_TIMESTAMP,#{resetPasswordNeeded},#{isAuth},#{isCredit},#{companyPayment},
+        #{integral},#{balance},#{usableBalance},#{lockBalance},#{creditAmount},#{creditUasbelAmount},#{creditLimit})
+    </insert>
+    <select id="getOpenId" resultType="String">
+        SELECT ub.openId FROM USER AS u LEFT JOIN userbinding AS ub ON u.userid=ub.userid WHERE u.userid=#{userId} LIMIT 1
+    </select>
+    <select id="getSonUsers" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        u.loginNo,u.userId,u.portrait,u.userName,uf.masterUserId,uf.totalQuota,uf.consumeQuota,uf.quotaType,uf.limitQuota
+        from userfamilypayrelation as uf join user as u on uf.userId=u.userId where masterUserId=#{userId}
+    </select>
+    <update id="bindUser">
+        update user set parentUserId=#{parentUserId} where userId=#{userId}
+    </update>
+    <insert id="insertUserfamilypayrelation">
+        insert into
+        userfamilypayrelation(masterUserId,userId,quotaType,limitQuota,totalquota,consumeQuota,totalAmount,disabled,updateTime,createTime)
+        VALUES
+        (#{masterUserId},#{userId},#{quotaType},#{limitQuota},#{totalQuota},#{consumeQuota},#{totalAmount},#{disabled},CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)
+    </insert>
+    <delete id="deleteUserfamilypayrelation">
+        delete from userfamilypayrelation where userId=#{userId} and masterUserId=#{masterUserId}
+    </delete>
+    <update id="updateUserfamilypayrelation">
+        update userfamilypayrelation
+        <trim prefix="set" suffixOverrides=",">
+            <if test="quotaType !=null">
+                quotaType=#{quotaType},
+            </if>
+            <if test="limitQuota !=null">
+                LimitQuota=#{limitQuota},
+            </if>
+            <if test="totalQuota !=null">
+                totalQuota=#{totalQuota},
+            </if>
+            <if test="consumeQuota !=null">
+                consumeQuota=#{consumeQuota},
+            </if>
+            <if test="updateTime !=null">
+                updateTime=#{updateTime},
+            </if>
+        </trim>
+        where userId=#{userId} and MasterUserId=#{masterUserId}
+    </update>
+    <update id="clearFamilyLimit">
+        update userfamilypayrelation set consumeQuota=0 where quotaType=#{quotaType}
+    </update>
+    <select id="getFamilyPay" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        u.portrait as portrait,
+        u.userName as userName,
+        uf.masterUserId as masterUserId,
+        uf.userId as userId,
+        uf.quotaType as quotaType,
+        uf.limitQuota as limitQuota,
+        uf.totalQuota as totalQuota,
+        uf.consumeQuota as consumeQuota,
+        uf.totalAmount as totalAmount,
+        uf.disabled as disabled,
+        uf.updateTime as updateTime,
+        uf.createTime as createTime from user u left join userfamilypayrelation uf on uf.masterUserId=u.userId where
+        uf.userId=#{userId}
+    </select>
+    <select id="getFamilyPayTest" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        u.usableBalance as usableBalance,
+        u.portrait as portrait,
+        u.userName as userName,
+        uf.masterUserId as masterUserId,
+        uf.userId as userId,
+        uf.quotaType as quotaType,
+        uf.limitQuota as limitQuota,
+        uf.totalQuota as totalQuota,
+        uf.consumeQuota as consumeQuota,
+        uf.totalAmount as totalAmount,
+        uf.disabled as disabled,
+        uf.updateTime as updateTime,
+        uf.createTime as createTime from user u left join userfamilypayrelation uf on uf.masterUserId=u.userId where
+        uf.userId=#{userId}
+    </select>
+    <select id="getFamilyPayMasterBalance" resultType="BigDecimal">
+        select
+        u.usableBalance
+        FROM USER u LEFT JOIN userfamilypayrelation uf ON uf.masterUserId=u.userId
+        where uf.userId=#{userId}
+    </select>
+    <update id="familyPay">
+        update userfamilypayrelation set consumeQuota=(consumeQuota+#{amount}),totalAmount=(totalAmount+#{amount}) where
+        userId=#{userId} and (totalQuota-consumeQuota-#{amount})>=0
+    </update>
+    <update id="refundFamilyPay">
+        update userfamilypayrelation set consumeQuota=(consumeQuota-#{amount}),totalAmount=(totalAmount-#{amount}) where
+        userId=#{userId} and consumeQuota-#{amount}>=0 and totalAmount-#{amount}>=0
+    </update>
+    <update id="masterPay">
+        update user set usableBalance=(usableBalance-#{amount}),balance=(balance-#{amount}) where userId=#{userId} and
+        usableBalance-#{amount}>=0 and balance-#{amount}>=0
+    </update>
+    <update id="refundMasterPay">
+        update user set usableBalance=(usableBalance+#{amount}),balance=(balance+#{amount}) where userId=#{userId}
+    </update>
+
+    <select id="getCompanyPay" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        cd.companyId as companyId,
+        cd.paymentDefinitionId AS paymentDefinitionId,
+        u.userId AS userId,
+        uq.totalquota AS totalQuota,
+        uq.limitQuota as limitQuota,
+        uq.consumequota AS consumeQuota,
+        cd.quotaType AS quotaType,
+        c.balance as balance
+        from
+        userQuota uq
+        inner join companypaymentdefinition cd on uq.paymentDefinitionId = cd.paymentDefinitionId
+        inner join user u on uq.userId = u.userId
+        inner join company c on cd.companyId=c.companyId
+        where
+        uq.userid = #{userId}
+    </select>
+    <update id="updateUserQuota">
+        update userquota set consumeQuota=(consumeQuota+#{amount}),totalAmount=(totalAmount+#{amount}) where
+        userId=#{userId} and (totalQuota-consumeQuota-#{amount})>=0
+    </update>
+    <update id="refundUserQuota">
+        update userquota set consumeQuota=(consumeQuota-#{amount}),totalAmount=(totalAmount-#{amount}) where
+        userId=#{userId} and consumeQuota-#{amount}>=0 and totalAmount-#{amount}>=0
+    </update>
+    <update id="updateCompanyBalance">
+        update company set balance=(balance-#{amount}) where companyId=#{companyId} and balance-#{amount}>=0
+    </update>
+    <update id="refundCompanyBalance">
+        update company set balance=(balance+#{amount}) where companyId=#{companyId}
+    </update>
+
+    <insert id="insertUserCoupon" parameterType="com.wufanbao.api.clientservice.entity.UserCoupon">
+        insert into usercoupon
+        values(#{couponId},#{couponDefinitionId},#{userId},#{status},#{createTime},#{startTime},#{endTime})
+    </insert>
+    <update id="gotCoupon">
+        update coupondefinition set got=got+1 where couponDefinitionId=#{couponDefinitionId}
+    </update>
+    <select id="getUseableUserCoupons" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        c.couponDefinitionId AS couponDefinitionId,
+        c.couponType AS couponType,
+        c.couponName AS couponName,
+        c.useRule AS useRule,
+        c.validityRule AS validityRule,
+        c.amount AS amount,
+        c.content AS content,
+        u.couponId AS couponId,
+        u.userId AS userId,
+        u.status AS status,
+        u.createTime AS createTime,
+        u.startTime AS startTime,
+        u.endTime AS endTime,
+        c.territorialLimitation AS territorialLimitation
+        from
+        usercoupon u
+        inner join coupondefinition c on u.couponDefinitionId = c.couponDefinitionId
+        where
+        userId =#{userId}
+        AND u.startTime &lt; CURRENT_TIMESTAMP
+        AND CURRENT_TIMESTAMP &lt; u.endTime
+        AND u.status = 1
+    </select>
+    <select id="getUserCoupon" resultType="com.wufanbao.api.clientservice.common.Data">
+        select
+        c.couponDefinitionId AS couponDefinitionId,
+        c.couponType AS couponType,
+        c.couponName AS couponName,
+        c.useRule AS useRule,
+        c.notice AS notice,
+        c.matters as matters,
+        c.validityRule AS validityRule,
+        c.amount AS amount,
+        c.content AS content,
+        u.couponId AS couponId,
+        u.userId AS userId,
+        u.status AS status,
+        u.createTime AS createTime,
+        u.startTime AS startTime,
+        u.endTime AS endTime,
+        c.territorialLimitation AS territorialLimitation
+        from usercoupon u
+        join coupondefinition c ON u.couponDefinitionId = c.couponDefinitionId
+        where couponId =#{couponId}
+    </select>
+    <select id="getInvalidUserCoupon" resultType="com.wufanbao.api.clientservice.entity.UserCoupon">
+        select
+        u.userId,
+        u.createTime,
+        u.status,
+        u.couponDefinitionId,
+        u.couponId,
+        u.startTime,
+        u.endTime
+        from usercoupon as u where u.endTime &lt; CURRENT_TIMESTAMP and u.status=1 order by u.endTime desc limit 1
+    </select>
+    <update id="invalidCoupon">
+        update usercoupon set status=3 where couponId=#{couponId} and status=1;
+    </update>
+    <select id="getCouponDefinition" resultType="com.wufanbao.api.clientservice.entity.CouponDefinition">
+        select
+        c.couponDefinitionId,
+        c.createTime,
+        c.amount,
+        c.isActive,
+        c.matters,
+        c.notice,
+        c.activityId,
+        c.content,
+        c.couponName,
+        c.couponType,
+        c.got,
+        c.territorialLimitation,
+        c.used,
+        c.useRule,
+        c.validityRule
+        from coupondefinition as c where c.couponDefinitionId=#{couponDefinitionId}
+    </select>
+    <update id="useCoupon">
+        update usercoupon set status=2 where couponId=#{couponId} and status=1;
+    </update>
+    <update id="refundCoupon">
+        update usercoupon set status=1 where couponId=#{couponId} and status=2;
+    </update>
+    <update id="addCouponDefinitionUsed">
+        update coupondefinition set used=used+1 where couponDefinitionId=#{couponDefinitionId}
+    </update>
+    <update id="minusCouponDefinitionUsed">
+        update coupondefinition set used=used-1 where couponDefinitionId=#{couponDefinitionId} and used-1>=0
+    </update>
+
+    <update id="updateUserRecharge">
+        UPDATE userRecharge set
+        tradeNo=#{tradeNo},
+        actualAmount=#{actualAmount},
+        payStatus=2,
+        receiveTime=CURRENT_TIMESTAMP
+        where userId=#{userId} and rechargeId=#{rechargeId}
+    </update>
+    <insert id="insertUserRecharge" parameterType="com.wufanbao.api.clientservice.entity.UserRecharge">
+        insert into
+        userRecharge(rechargeId,userId,amount,bcTradeNo,tradeNo,payType,createTime,payStatus,actualAmount)VALUES
+        (#{rechargeId},#{userId},#{amount},#{bcTradeNo},#{tradeNo},#{payType},CURRENT_TIMESTAMP,#{payStatus},#{actualAmount})
+    </insert>
+    <select id="getUserRecharges" resultType="com.wufanbao.api.clientservice.entity.UserRecharge">
+        select userId,amount,payStatus,receiveTime FROM userrecharge WHERE RechargeId=#{rechargeId}
+    </select>
+
+    <insert id="insertUserCapital">
+        insert into usercapitallog (userCapitalLogId,userId,amount,createTime,sourceType,sourceId,description,balance)
+        values
+        (#{userCapitalLogId},#{userId},#{amount},CURRENT_TIMESTAMP,#{sourceType},#{sourceId},#{description},(select
+        usableBalance from user where userid=#{userId}))
+    </insert>
+
+    <insert id="insertCompanyCapitalLog">
+        insert into
+        companycapitallog(capitalLogId,companyId,employeeId,insertTime,amount,isIn,sourceType,sourceId,capitalLogType,detial)
+        values(#{capitalLogId},#{companyId},#{employeeId},CURRENT_TIMESTAMP,#{amount},#{isIn},#{sourceType},#{sourceId},#{capitalLogType},#{detial})
+    </insert>
+
+    <select id="getUserSignin" resultType="com.wufanbao.api.clientservice.entity.UserSignIn">
+        select
+        u.userId,
+        u.maxContinuousSignedDays,
+        u.totalSignedDays,
+        u.continuousSignedDays,
+        u.signedTime
+        from usersignin as u where u.userId=#{userId};
+    </select>
+
+    <select id="getUserSigninLog" resultType="com.wufanbao.api.clientservice.entity.UserSignInLog">
+        select
+        u.userId,
+        u.SignedDay,
+        u.signedTime,
+        u.integral
+        from usersigninlog as u where u.userId=#{userId} group  by SignedDay desc  limit 1;
+    </select>
+
+
+    <insert id="insertUserSignin">
+        insert into usersignin(userId,signedTime,continuousSignedDays,totalSignedDays,maxContinuousSignedDays)
+        values(#{userId},CURRENT_TIMESTAMP,1,1,1);
+    </insert>
+    <insert id="addSignInLog">
+        insert into usersigninlog values(#{userId},#{signedDay},CURRENT_TIMESTAMP,#{integral})
+    </insert>
+
+    <update id="userSignin">
+        update usersignin set
+        signedTime=CURRENT_TIMESTAMP,continuousSignedDays=#{continuousDays},totalSignedDays=totalSignedDays+1 where
+        userId=#{userId}
+    </update>
+
+    <update id="userContinuitySignin">
+        update usersignin set
+        signedTime=CURRENT_TIMESTAMP,continuousSignedDays=continuousSignedDays+1,totalSignedDays=totalSignedDays+1 where
+        userId=#{userId}
+    </update>
+
+    <update id="updateMaxContinuousSignin">
+        update usersignin set maxContinuousSignedDays=#{maxContinuousDays} where userId=#{userId}
+    </update>
+
+    <update id="reduceIntegral">
+        update user set integral=(integral-#{quantity}) where userId=#{userId} and integral-#{quantity}>=0
+    </update>
+
+    <update id="addIntegral">
+        update user set integral=(integral+#{quantity}) where userId=#{userId}
+    </update>
+
+    <select id="getUserIntegralLogBySourceType" resultType="com.wufanbao.api.clientservice.entity.UserIntegralLog">
+        select
+        u.userId,
+        u.createTime,
+        u.sourceTypeId,
+        u.sourceType,
+        u.integralLogId,
+        u.quantity,
+        u.description,
+        u.balance
+        from userintegrallog as u where u.userId=#{userId} and u.sourceType=#{sourceType}
+    </select>
+
+    <insert id="insertIntegralLog">
+        insert into userintegrallog
+        values(#{integralLogId},#{userId},#{quantity},#{sourceType},#{sourceId},CURRENT_TIMESTAMP,#{description},(select
+        integral from user where userId=#{userId}))
+    </insert>
+
+    <update id="updateGradeGrowUp">
+        update user set gradeValue=(gradeValue+#{gradeValue}) where userId=#{userId}
+    </update>
+
+    <select id="getUserGradelogBySourceType" resultType="com.wufanbao.api.clientservice.entity.UserGradeLog">
+        select
+        u.balance,
+        u.description,
+        u.createTime,
+        u.sourceType,
+        u.userId,
+        u.sourceId,
+        u.gain,
+        u.userGradeLogId
+        from usergradelog as u where u.userId=#{userId} and u.sourceType=#{sourceType}
+    </select>
+
+    <insert id="insertUserGradeLog">
+        insert into usergradelog values(#{userGradeLogId},#{userId},#{gain},(select gradeValue from user where
+        userId=#{userId}),#{sourceType},#{sourceId},CURRENT_TIMESTAMP,#{description})
+    </insert>
+
+    <select id="getIntegralCommoditys" resultType="com.wufanbao.api.clientservice.entity.IntegralCommodity">
+        select integralCommodityId,commodityName,price, description,imageUrl,quantity,couponAmount from
+        integralcommodity where active=1 limit #{pageStart},#{pageSize}
+    </select>
+
+    <select id="getIntegralCommodity" resultType="com.wufanbao.api.clientservice.entity.IntegralCommodity">
+        select integralCommodityId,commodityName,commodityType,definition,price,
+        description,imageUrl,quantity,couponAmount from integralcommodity where active=1 and
+        integralCommodityId=#{integralCommodityId}
+    </select>
+
+    <select id="getUserIntegralexchanges" resultType="com.wufanbao.api.clientservice.entity.IntegralExchange">
+        select description,createTime,amount from integralexchange where userId=#{userId} ORDER BY createTime desc limit
+        #{pageStart},#{pageSize}
+    </select>
+    <select id="getIntegralexchanges" resultType="com.wufanbao.api.clientservice.common.Data">
+        select u.userName as userName, u.portrait as portrait,ie.description as description from integralexchange ie
+        inner join user u on u.userId=ie.userId order by ie.createTime desc limit 15
+    </select>
+
+    <insert id="addIntegralExchangeLog">
+        insert into integralexchange
+        values(#{integralExchangeId},#{userId},#{amount},#{integralCommodityId},#{description},CURRENT_TIMESTAMP);
+    </insert>
+
+    <update id="updateIntegralCommodity">
+        update integralcommodity set quantity=quantity-#{quantity} where integralCommodityId=#{integralCommodityId} and
+        quantity-#{quantity}>=0
+    </update>
+
+    <select id="getAreaId" resultType="java.lang.Long">
+        select areaid from area where areaname=#{areaName}
+    </select>
+
+    <update id="setLoginNo">
+        update user set loginNo=#{loginNo},mb=#{loginNo} where userId=#{userId}
+    </update>
+
+    <update id="setPayPassword">
+        update user set payPassword=#{payPassword} where userId=#{userId}
+    </update>
+
+    <update id="setLoginPassword">
+        update user set password=#{password},resetPasswordNeeded=false where userId=#{userId}
+    </update>
+
+    <update id="updatePortrait">
+        update user set portrait=#{portrait} where userId = #{userId}
+    </update>
+    <insert id="insertUserLeaveMessage">
+        insert into userleavemessage(userId,leaveMessage,leaveMessageId)
+        values(#{userId},#{leaveMessage},#{leaveMessageId})
+    </insert>
+
+    <select id="getHistoryUserCoupons" resultType="com.wufanbao.api.clientservice.common.Data">
+      SELECT
+      uc.couponId,
+      uc.couponDefinitionId,
+      uc.userId,
+      uc.status,
+      uc.startTime,
+      uc.endTime,
+      cd.activityId,
+      cd.couponType,
+      cd.couponName,
+      cd.amount,
+      cd.content,
+      cd.useRule,
+      cd.validityRule
+      FROM usercoupon AS uc LEFT JOIN coupondefinition cd
+      ON cd.couponDefinitionId=uc.couponDefinitionId
+      WHERE uc.userId=#{userId} limit #{pageStart},#{pageSize}
+    </select>
+
+</mapper>

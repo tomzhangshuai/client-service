@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.EmployeeDao">
+    <resultMap id="employee" type="com.wufanbao.api.olddriverservice.entity.Employee" autoMapping="true">
+        <result column="Mb" property="Mb"/>
+        <result column="passWord" property="passWord"/>
+    </resultMap>
+    <!--登录-->
+    <select id="queryEmployee" resultMap="employee">
+        SELECT Mb,passWord FROM employee WHERE LoginNo = #{Mb}
+    </select>
+    <!--根据手机号查询员工ID-->
+    <select id="getEmployeeIdByMb" resultType="java.lang.Long">
+        SELECT employeeId FROM employee WHERE loginNo=#{loginNo}
+    </select>
+    <!--根据用户手机号去查询员工信息 -->
+    <select id="getEmployee" resultType="com.wufanbao.api.olddriverservice.entity.Employee">
+        select employeename,mb,password,EmployeeId,isActive from Employee where LoginNo=#{Mb} and passWord=#{passWord}
+    </select>
+
+    <!--************************************************-->
+    <!--根据员工Id 获取员工数据-->
+    <select id="getEmployeeById" resultType="com.wufanbao.api.olddriverservice.entity.Employee">
+        select * from Employee where EmployeeId=#{employeeId}
+    </select>
+    <!--根据员工登录号获取员工数据-->
+    <select id="getEmployeeByLoginNo" resultType="com.wufanbao.api.olddriverservice.entity.Employee">
+        select * from Employee where loginNo=#{loginNo}
+    </select>
+</mapper>

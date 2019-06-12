@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.DistributionDao">
+    <resultMap id="distribution" type="com.wufanbao.api.olddriverservice.entity.Distribution" autoMapping="true">
+        <result column="DistributionOrderId" property="distributionOrderId"/>
+        <result column="x" property="x"/>
+        <result column="y" property="y"/>
+        <result column="address" property="address"/>
+        <result column="supplementOrderId" property="supplementOrderId"/>
+        <result column="supplementStatus" property="supplementStatus"/>
+        <result column="allowBeginTime" property="allowBeginTime"/>
+        <result column="allowEndTime" property="allowEndTime"/>
+        <result column="countQuantity" property="countQuantity"/>
+        <result column="machineId" property="machineId"/>
+        <result column="shelvedTime" property="shelvedTime"/>
+        <result column="companyName" property="companyName"/>
+    </resultMap>
+    <select id="queryDistribution" resultMap="distribution">
+        SELECT
+        dol.DistributionOrderId AS distributionOrderId,
+        m.X AS x,
+        m.Y AS y,
+        m.MachineId as machineId,
+        IFNULL(m.Address,0) AS address,
+        su.SupplementOrderId as supplementOrderId,
+        mp.allowBeginTime as allowBeginTime,
+        mp.allowEndTime as allowEndTime,
+        su.supplementStatus as supplementStatus,
+        su.ShelvedTime as shelvedTime,
+        c.CompanyName as companyName,
+        SUM(pr.Quantity) as countQuantity
+        FROM
+        distributionorderline dol
+        LEFT JOIN distributionorder dio ON dio.DistributionOrderId=dol.DistributionOrderId
+        LEFT JOIN supplementorder su ON dol.SupplementOrderId=su.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = su.MachineId
+        LEFT JOIN product pr on m.MachineId=pr.MachineId
+        LEFT JOIN machineput mp ON mp.MachinePutId = m.MachinePutId
+        LEFT JOIN company c on c.CompanyId=m.JoinCompanyId
+        WHERE dol.DistributionOrderId =#{distributionOrderId} and pr.IsStaple=1 AND dio.status=5 group by
+        su.SupplementOrderId,mp.AllowBeginTime,mp.AllowEndTime
+    </select>
+    <resultMap id="ddddd" type="com.wufanbao.api.olddriverservice.entity.DistributionOne" autoMapping="true">
+        <result column="supplementOrderId" property="supplementOrderId"/>
+    </resultMap>
+    <select id="distributionlist" resultMap="ddddd">
+        SELECT supplementOrderId FROM distributionorderline WHERE distributionOrderId = #{distributionOrderId}
+    </select>
+    <resultMap id="distributionProductLine" type="com.wufanbao.api.olddriverservice.entity.DistributionProductLine"
+               autoMapping="true">
+        <result column="distributionOrderId" property="distributionOrderId"/>
+        <result column="actualQuantity" property="actualQuantity"/>
+        <result column="quantity" property="quantity"/>
+    </resultMap>
+    <select id="actualQuantity" resultMap="distributionProductLine">
+        select distributionOrderId,SUM(ActualQuantity) as actualQuantity,SUM(quantity) as quantity from
+        distributionproductline where distributionorderid=#{distributionOrderId}
+    </select>
+    <select id="getStoreInfo" resultType="com.wufanbao.api.olddriverservice.entity.Store">
+        select s.* from distributionorder d inner join store s on d.storeId=s.StoreId where
+        d.DistributionOrderId=#{distributionOrderId};
+    </select>
+</mapper>

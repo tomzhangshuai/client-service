@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.ProductoffDao">
+    <select id="getProductoff" resultType="com.wufanbao.api.clientservice.common.Data">
+       SELECT p.productOffId,p.machineId,p.offtime,p.quantity,p.beginThermalTime,p.sendtime,p.taketime,p.sourceid,p.status,p.messageStatus,m.machineName,m.putMachineName
+       FROM productoff AS p LEFT JOIN machine AS m
+       ON p.MachineId=m.MachineId
+       WHERE p.offtime>DATE_SUB(NOW(),INTERVAL 1 DAY)
+       AND (NOW() BETWEEN DATE_SUB(p.sendtime,INTERVAL -5 MINUTE) AND DATE_SUB(p.sendtime,INTERVAL -30 MINUTE))
+       AND p.Status=3
+       AND p.messageStatus=0
+    </select>
+    <select id="getProductoffBySourceid" resultType="com.wufanbao.api.clientservice.entity.ProductOff">
+        SELECT
+        productoffid,
+        productglobalid,
+        machineid,
+        offtime,
+        beginthermaltime,
+        sendtime,
+        taketime,
+        outid,
+        lotno,
+        quantity,
+        actualprice,
+        price,
+        sourceid,
+        status,
+        messagestatus
+        FROM productoff
+        WHERE sourceid=#{sourceId}
+    </select>
+    <update id="updateMessageStatus">
+      UPDATE productoff SET messageStatus=1 WHERE sourceid=#{userOrderId}
+    </update>
+
+
+</mapper>

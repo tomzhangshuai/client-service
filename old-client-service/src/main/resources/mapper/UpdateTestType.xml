@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- user: WangZhiyuan date:2017/8/4 time:14:31 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UpdateTestType">
+    <update id="updateUserOrderType">
+        update userorder set status=#{status} where userOrderId=#{userOrderId}
+    </update>
+    <update id="updateSupplementOrderType">
+        update supplementorder set supplementStatus=#{supplementStatus} where supplementOrderId=#{supplementOrderId}
+    </update>
+    <update id="updateDistributionType">
+        update distributionorder set status=#{distributionStatus} where distributionOrderId=#{distributionOrderId}
+    </update>
+    <select id="selectMachineId" resultType="com.wufanbao.api.oldclientservice.entity.Machine">
+        SELECT machineId from userorder where userOrderId=#{userOrderId}
+    </select>
+</mapper>

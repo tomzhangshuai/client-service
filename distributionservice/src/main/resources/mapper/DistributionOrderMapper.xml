@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.distributionservice.dao.DistributionOrderDao">
+    <!-- 查询配送员未配送或配送中配送单 -->
+    <select id="getDistributingOrdersByEmployeeId" resultType="com.wufanbao.api.distributionservice.transfer.DistributionOrderInfo">
+        SELECT
+        o.distributionOrderId,
+        o.BEGINDISTRIBUTETIME as startTime,
+        o.ENDDISTRIBUTETIME as endTime,
+        o.IsTermination,
+        o.Status,
+        c.PlateNo,
+        l.deviceNumber,
+        p.cargoQuantity
+        FROM distributionorder o
+        join
+        (select count(*) deviceNumber,DistributionOrderId from distributionorderline group by DistributionOrderId)
+        l on o.DistributionOrderId=l.DistributionOrderId
+        join
+        (select sum(quantity) cargoQuantity,DistributionOrderId from distributionproductline where ProductGlobalId in(select ProductGlobalId from ProductGlobal where isStaple=1) group by DistributionOrderId)
+        p on o.DistributionOrderId=p.DistributionOrderId
+        left join
+        COMPANYVEHICLE c on c.VehicleId=o.VehicleId
+        where
+        o.DistributeEmployeeId=#{employeeId} and o.status&gt;3 and o.Status&lt;7
+        order by o.CreateTime asc
+    </select>
+
+    <select id="getHistoryOrdersByEmployeeId" resultType="com.wufanbao.api.distributionservice.transfer.DistributionOrderInfo">
+         SELECT
+        o.distributionOrderId,
+        o.BEGINDISTRIBUTETIME as startTime,
+        o.ENDDISTRIBUTETIME as endTime,
+        o.IsTermination,
+        o.Status,
+        c.PlateNo,
+        l.deviceNumber,
+        p.cargoQuantity
+        FROM distributionorder o
+        join
+        (select count(*) deviceNumber,DistributionOrderId from distributionorderline group by DistributionOrderId)
+        l on o.DistributionOrderId=l.DistributionOrderId
+        join
+        (select sum(actualQuantity) cargoQuantity,DistributionOrderId from distributionproductline where ProductGlobalId in(select ProductGlobalId from ProductGlobal where isStaple=1) group by DistributionOrderId)
+        p on o.DistributionOrderId=p.DistributionOrderId
+        join
+        COMPANYVEHICLE c on c.VehicleId=o.VehicleId
+        WHERE
+        o.DistributeEmployeeId=#{employeeId} and o.Status &gt;6
+        order by o.CreateTime desc
+        limit 10
+    </select>
+
+    <!-- 查询配送中的配送单数 -->
+    <select id="queryDistributingOrders" resultType="int">
+        select count(*) from distributionorder where DistributionOrderId!=#{distributionOrderId} and status&gt;4 and Status&lt;7 and DistributeEmployeeId=#{employeeId}
+    </select>
+
+
+
+
+
+    <select id="getStoreInfo" resultType="com.wufanbao.api.distributionservice.entities.Store">
+        select s.* from distributionorder d inner join store s on d.storeId=s.StoreId where
+        d.DistributionOrderId=#{distributionOrderId};
+    </select>
+
+
+
+    <!--出发 -->
+    <update id="setOut">
+        update distributionorder set status=5,BeginDistributeTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId} and status=4
+    </update>
+
+
+
+    <!--中止订单 -->
+    <update id="terminate">
+        update distributionorder set Status=6,isTermination=1,remark=#{remark},EndDistributeTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId} and Status&lt;6
+    </update>
+
+    <!-- 设置已配送 -->
+    <update id="setDistributed">
+        update distributionorder set status=6,EndDistributeTime=CURRENT_TIMESTAMP where  DistributionOrderId=#{distributionOrderId} and Status=5
+    </update>
+
+    <!-- 返仓确认完成 -->
+    <update id="complete">
+        update distributionorder set status=7,ConfirmTime=CURRENT_TIMESTAMP where
+        DistributionOrderId=#{distributionOrderId} and Status=6
+    </update>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.AlipayDao">
+    <resultMap id="alipay" type="com.wufanbao.api.oldclientservice.entity.Alipay" autoMapping="true">
+        <result column="userId" property="userId"/>
+        <result column="userOrderId" property="userOrderId"/>
+    </resultMap>
+    <select id="queryAlipay" resultMap="alipay">
+        SELECT
+        u.UserId,
+        uo.UserOrderId
+        FROM
+        userorder uo LEFT JOIN user u ON u.userId = uo.userId
+        WHERE uo.UserOrderId=#{userOrderId}
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.ReplenishmentPrepareDao">
+    <!-- 机器信息-->
+    <select id="getMachineInfo" resultType="java.util.HashMap">
+        SELECT
+        p.MaxQuantity as maxQuantity,
+        p.Quantity as quantity,
+        p.LockQuantity as lockQuantity,
+        p.isStaple as isStaple,
+        p.UseableQuantity as useableQuantity,
+        p.ProductGlobalId as productGlobalId,
+        pg.ProductName as productName,
+        pg.ImageUrl as imageUrl
+        FROM
+        product p
+        LEFT JOIN productglobal pg ON p.ProductGlobalId = pg.ProductGlobalId
+        WHERE
+        MachineId =#{machineId}
+    </select>
+    <!-- 补货单 -->
+    <insert id="generateSupplementOrder">
+        INSERT INTO supplementorder
+        (SupplementOrderId,LogisticCompanyId,JoinCompanyId,MachineId,OrderEmployeeId,OrderTime,AuditorEmployeeId,AuditTime,AcceptEmployeeId,SupplementStatus,PlanTime,StoreId,CityCompanyId,SupplementDay)
+        VALUES
+        (#{supplementOrderId},#{logisticCompanyId},#{joinCompanyId},#{machineId},#{orderEmployeeId},#{orderTime},#{auditorEmployeeId},#{auditTime},#{acceptEmployeeId},#{supplementStatus},#{planTime},#{storeId},#{cityCompanyId},#{supplementDay});
+    </insert>
+    <!-- 补货单详情-->
+    <insert id="generateSupplementOrderLine">
+        INSERT INTO supplementorderline
+        (SupplementOrderLineId,SupplementOrderId,MachineId,ProductGlobalId,StockUpdateTime,StockQuantity,ExpectQuantity,Quantity,ActualQuantity,StockConsume,LockQuantity,DumpQuantity,OffProductGlobalId,ExceptionQuantity,BackQuantity,IsStaple)
+        VALUES
+        (#{supplementOrderLineId},#{supplementOrderId},#{machineId},#{productGlobalId},#{stockUpdateTime},#{stockQuantity},#{expectQuantity},#{quantity},#{actualQuantity},#{stockConsume},#{lockQuantity},#{dumpQuantity},#{offProductGlobalId},#{exceptionQuantity},#{backQuantity},#{isStaple})
+    </insert>
+    <!-- 配送单-->
+    <insert id="generateDistributionOrder">
+        INSERT INTO distributionorder
+        (DistributionOrderId,LogisticCompanyId,DistributeEmployeeId,StoreId,VehicleId,DriverEmployeeId,MarkEmployeeId,PlanDeliverTime,BeginDistributeTime,Status,CityCompanyId,CreateTime,DistributeDate,IsTermination)
+        VALUES
+        (#{distributionOrderId},#{logisticCompanyId},#{distributeEmployeeId},#{storeId},#{vehicleId},#{driverEmployeeId},#{markEmployeeId},#{planDeliverTime},#{beginDistributeTime},#{status},#{cityCompanyId},#{createTime},#{distributeDate},#{isTermination})
+    </insert>
+    <!--配送单详情 -->
+    <insert id="generateDistributionOrderLine">
+        INSERT INTO distributionorderline
+        (DistributionOrderId,SupplementOrderId,Turn,ArriveTime,IsDistributed,IsTerminate)
+        VALUES
+        (#{distributionOrderId},#{supplementOrderId},#{turn},#{arriveTime},#{isDistributed},#{isTerminate});
+    </insert>
+    <!--配送单商品详情 -->
+    <insert id="generateDistributionProductLine">
+        INSERT INTO distributionproductline
+        (DistributionOrderId,ProductGlobalId,Quantity,PlanQuantity,ExtraQuantity,ActualQuantity,SurplusQuantity,StoreQuantity,ExceptionQuantity)
+        VALUES
+        (#{distributionOrderId},#{productGlobalId},#{quantity},#{planQuantity},#{extraQuantity},#{actualQuantity},#{surplusQuantity},#{storeQuantity},#{exceptionQuantity})
+    </insert>
+</mapper>

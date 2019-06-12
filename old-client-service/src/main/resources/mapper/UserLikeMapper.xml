@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserLikeDao">
+    <select id="querylike" resultType="com.wufanbao.api.oldclientservice.entity.UserLike"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserLike">
+        SELECT * FROM UserLike
+    </select>
+
+    <select id="query" resultType="com.wufanbao.api.oldclientservice.entity.UserLike"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserLike">
+        SELECT * FROM UserLike WHERE articleId = #{articleId}
+    </select>
+
+    <select id="queryuser" resultType="com.wufanbao.api.oldclientservice.entity.UserLike"
+            parameterType="com.wufanbao.api.oldclientservice.entity.UserLike">
+        SELECT * FROM UserLike WHERE userId = #{userId}
+    </select>
+
+    <insert id="addlike" parameterType="com.wufanbao.api.oldclientservice.entity.UserLike">
+        INSERT INTO UserLike(userId,articleId) VALUES (#{userId},#{articleId})
+    </insert>
+</mapper>

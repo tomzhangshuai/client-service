@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.olddriverservice.dao.DistributionOrderLineDao">
+    <update id="updateArriveTime" parameterType="com.wufanbao.api.olddriverservice.entity.DistributionOrderLine">
+        UPDATE distributionOrderLine SET
+        arriveTime=CURRENT_TIMESTAMP,isDistributed=#{isDistributed},distributedTime=#{distributedTime,jdbcType=DATE}
+        WHERE distributionOrderId=#{distributionOrderId} AND supplementOrderId=#{supplementOrderId}
+    </update>
+    <update id="updateDistributedTime" parameterType="com.wufanbao.api.olddriverservice.entity.DistributionOrderLine">
+        UPDATE distributionOrderLine SET isDistributed=#{isDistributed},distributedTime=CURRENT_TIMESTAMP
+        WHERE distributionOrderId=#{distributionOrderId} AND supplementOrderId=#{supplementOrderId}
+    </update>
+    <select id="queryId" resultType="com.wufanbao.api.olddriverservice.entity.DistributionOrderLine">
+        SELECT distributionOrderId FROM distributionOrderLine WHERE supplementOrderId = #{supplementOrderId}
+    </select>
+</mapper>

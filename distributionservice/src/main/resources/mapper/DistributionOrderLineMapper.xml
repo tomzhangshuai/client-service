@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.distributionservice.dao.DistributionOrderLineDao">
+
+    <!--查询配送单正在配送中的补货单-->
+    <select id="getDistributingSupplementOrder" resultType="com.wufanbao.api.distributionservice.entities.SupplementOrder">
+        select l.SupplementOrderId,s.SupplementStatus from distributionorderline l left join supplementorder s on
+        l.SupplementOrderId=s.SupplementOrderId where l.DistributionOrderId=#{distributionOrderId} and
+        s.SupplementStatus&gt; 4 and s.SupplementStatus&lt;10
+    </select>
+    <select id="getDistributingOrderDetail" resultType="com.wufanbao.api.distributionservice.transfer.DistributingOrderDetail">
+        SELECT
+        dol.DistributionOrderId,
+        m.X,
+        m.Y,
+        m.MachineId,
+        m.Address,
+        mp.allowBeginTime,
+        mp.allowEndTime,
+        su.SupplementOrderId,
+        su.supplementStatus,
+        su.ShelvedTime,
+        c.CompanyName,
+        SUM(pr.Quantity) as countQuantity
+        FROM
+        distributionorderline dol
+        LEFT JOIN distributionorder dio ON dio.DistributionOrderId=dol.DistributionOrderId
+        LEFT JOIN supplementorder su ON dol.SupplementOrderId=su.SupplementOrderId
+        LEFT JOIN machine m ON m.MachineId = su.MachineId
+        LEFT JOIN product pr on m.MachineId=pr.MachineId
+        LEFT JOIN machineput mp ON mp.MachinePutId = m.MachinePutId
+        LEFT JOIN company c on c.CompanyId=m.JoinCompanyId
+        WHERE dol.DistributionOrderId =#{distributionOrderId} and pr.IsStaple=1 AND dio.status=5 group by
+        su.SupplementOrderId,mp.AllowBeginTime,mp.AllowEndTime
+    </select>
+
+    <!-- 配送中，根据补货单ID获取配送单ID -->
+    <select id="getDistributionOrderIdBySupplementOrderId" resultType="long">
+        select o.DistributionOrderId from
+        distributionorderLine l
+        join  DistributionOrder o on l.DistributionOrderId=o.DistributionOrderId
+        where o.status=5 and l.supplementOrderId=#{supplementOrderId}
+    </select>
+
+    <select id="getUndistributedCount" resultType="int">
+        select count(*) from distributionorderLine where IsDistributed=0 and  DistributionOrderId=#{distributionOrderId}
+    </select>
+
+    <!-- 补货单下货时更新到达时间 -->
+    <update id="dumpArrived">
+        update distributionorderLine set ArriveTime=current_timestamp where DistributionOrderId=#{distributionOrderId} and SupplementOrderId=#{supplementOrderId}
+    </update>
+
+    <!--终止配送单和补货单的关系 -->
+    <update id="terminateLine">
+        update distributionorderLine set IsTerminate=1 where DistributionOrderId=#{distributionOrderId} and IsDistributed=0
+    </update>
+
+    <!-- 完成补货 -->
+    <update id="completeSupplement">
+        update distributionorderLine set DistributedTime=current_timestamp,IsDistributed=1 where DistributionOrderId=#{distributionOrderId} and SupplementOrderId=#{supplementOrderId}
+    </update>
+
+</mapper>

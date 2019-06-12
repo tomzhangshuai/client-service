@@ -1,0 +1,109 @@
+[framework][18:02:07,527-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field articleDao in com.wufanbao.api.oldclientservice.service.impl.ArticleServiceImpl required a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' in your configuration.
+ 
+[framework][18:07:38,423-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field articleDao in com.wufanbao.api.oldclientservice.service.impl.ArticleServiceImpl required a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.wufanbao.api.oldclientservice.dao.ArticleDao' in your configuration.
+ 
+[framework][18:11:25,295-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to configure a DataSource: 'url' attribute is not specified and no embedded datasource could be configured.
+
+Reason: Failed to determine a suitable driver class
+
+
+Action:
+
+Consider the following:
+	If you want an embedded database (H2, HSQL or Derby), please put it on the classpath.
+	If you have database settings to be loaded from a particular profile you may need to activate it (no profiles are currently active).
+ 
+[framework][18:16:20,579-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:18:46,061-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:19:06,488-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 
+[framework][18:19:50,468-org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter.report(LoggingFailureAnalysisReporter.java:42)][ERROR]:
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jedisPool in com.wufanbao.api.oldclientservice.service.impl.FamilyPayServiceImpl required a bean of type 'redis.clients.jedis.JedisPool' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'redis.clients.jedis.JedisPool' in your configuration.
+ 

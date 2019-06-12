@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserPortrait">
+    <select id="getById" parameterType="int" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        SELECT userId,portrait FROM user WHERE userId = #{userId}
+    </select>
+    <update id="updatePortrait" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        UPDATE user set portrait=#{portrait} WHERE userId = #{userId}
+    </update>
+    <update id="updateisAuth" parameterType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        UPDATE user set isAuth=#{isAuth} WHERE userId = #{userId}
+    </update>
+</mapper>

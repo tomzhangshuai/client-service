@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.AppAdDao">
+    <select id="getAppADs" resultType="com.wufanbao.api.clientservice.entity.AppAD">
+        select
+        a.ADId,
+        a.ADType,
+        a.ADName,
+        a.ADImageUrl,
+        a.ADPosition,
+        a.ADResource,
+        a.AndroidNative,
+        a.IOSNative
+        from appad as a where a.isActive=1 and a.ADPosition=1
+    </select>
+    <select id="getAppDiscovers" resultType="com.wufanbao.api.clientservice.entity.AppDiscover">
+        select
+        a.appDiscoverId,
+        a.contentUrl,
+        a.imageUrl,
+        a.shareImageUrl,
+        a.shareSubtitle,
+        a.shareTitle
+        from appdiscover as a where a.isActive = 1
+    </select>
+    <select id="getAppDiscover" resultType="com.wufanbao.api.clientservice.entity.AppDiscover">
+        select contentUrl,appDiscoverId,isActive,shareTitle,imageUrl,shareImageUrl,shareSubtitle from appDiscover where
+        appDiscoverId=#{appDiscoverId}
+    </select>
+</mapper>

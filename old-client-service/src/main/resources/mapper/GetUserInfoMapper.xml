@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- date:2017/8/2 time:17:24 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.GetUserInfoDao">
+    <!--获取用户部分信息 -->
+    <select id="getUserInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserRegistered">
+        select
+        userid,loginno,password,username,usablebalance,integral,mB,portrait,invitationCode,payPassWord,gradeValue,sex,birthday,breakfast,lunch,dinner
+        from user where userid=#{userId}
+    </select>
+    <!--获取用户银行卡信息 -->
+    <select id="getUserBankInfo" resultType="com.wufanbao.api.oldclientservice.entity.UserBank">
+        select * from userbank where userid=#{userId}
+    </select>
+    <!--获取用户可用便当币 -->
+    <select id="getUserUsableBalance" resultType="java.math.BigDecimal">
+        select usablebalance from user where userid=#{userId}
+    </select>
+    <select id="getUserIdByMb" resultType="java.lang.Long">
+        select userId from user where LoginNo=#{mb}
+    </select>
+</mapper>

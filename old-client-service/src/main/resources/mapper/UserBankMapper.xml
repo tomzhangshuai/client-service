@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserBankDao">
+    <insert id="insertUserBank" parameterType="com.wufanbao.api.oldclientservice.entity.UserBank">
+        INSERT INTO userBank (userBankId,userId,bankName,fullName,phone,account)
+        VALUES (#{userBankId},#{userId},#{bankName},#{fullName},#{phone},#{account})
+    </insert>
+    <select id="selectUserBank" resultType="com.wufanbao.api.oldclientservice.entity.UserBank">
+        SELECT bankName,account FROM userBank WHERE userId = #{userId}
+    </select>
+    <select id="checkAccount" parameterType="com.wufanbao.api.oldclientservice.entity.UserBank"
+            resultType="com.wufanbao.api.oldclientservice.entity.UserBank">
+        select * from userBank where account = #{account}
+    </select>
+    <delete id="deleteUserBank" parameterType="com.wufanbao.api.oldclientservice.entity.UserBank">
+        DELETE FROM userBank WHERE account = #{account}
+    </delete>
+</mapper>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.UserIntegralDao">
+    <!--更新用户积分 -->
+    <update id="integralGrowUp">
+        update user set Integral=(Integral+#{quantity}) where userId=#{userId} and Integral+#{quantity}>=0
+    </update>
+    <!--插入用户积分记录 -->
+    <insert id="insertIntegralLog">
+        insert into userintegrallog
+        values(#{integralLogId},#{userId},#{quantity},#{sourceType},#{sourceId},CURRENT_TIMESTAMP,#{description},(select
+        Integral from user where userId=#{userId}))
+    </insert>
+    <!-- 用户积分记录 -->
+    <select id="getUserIntegralLog" resultType="com.wufanbao.api.oldclientservice.entity.UserIntegralLog">
+        select * from UserIntegralLog where userId=#{userId} order by createTime desc
+    </select>
+    <!-- 全部用户兑换记录-->
+    <select id="allIntegralExchange" resultType="java.util.HashMap">
+        select u.UserName as userName, u.Portrait as portrait,ie.Description as description from integralexchange ie
+        inner join user u on u.UserId=ie.UserId order by ie.CreateTime desc limit 15
+    </select>
+
+    <!-- 用户积分兑换记录-->
+    <select id="userIntegralExchange" resultType="java.util.HashMap">
+        select description,createTime,amount from integralexchange where userId=#{userId} ORDER BY createTime DESC
+    </select>
+    <!--积分商城商品 -->
+    <select id="integralCommodity" resultType="java.util.HashMap">
+        select integralCommodityId,commodityName,price, description,imageUrl,quantity,couponAmount from
+        integralcommodity where Active=1
+    </select>
+    <!--兑换积分商城商品-->
+    <update id="updateCommodity">
+        update integralcommodity set Quantity=Quantity-#{buyQuantity} where IntegralCommodityId=#{integralCommodityId}
+        and Quantity-#{buyQuantity}>0
+    </update>
+    <!--兑换商品记录 -->
+    <insert id="addIntegralExchangeLog">
+        insert into integralexchange
+        values(#{integralExchangeId},#{userId},#{amount},#{integralCommodityId},#{description},CURRENT_TIMESTAMP);
+    </insert>
+    <!--根据商品id查询商品详情 -->
+    <select id="getIntegralCommodity" resultType="java.util.HashMap">
+        select integralCommodityId,commodityName,price, description,imageUrl,commodityType,definition from
+        integralcommodity where Active=1 and integralCommodityId=#{integralCommodityId}
+    </select>
+</mapper>

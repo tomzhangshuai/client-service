@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--date:2017/8/4 time:14:31 -->
+<mapper namespace="com.wufanbao.api.oldclientservice.dao.RecommendedPrizeDao">
+    <!--获取用户累计收益便当币-->
+    <select id="getEarningsLunchMoney" resultType="java.math.BigDecimal">
+        select SUM(RewardValue) as rewardValue from userreward where userid=#{userId} and rewardType=1
+    </select>
+    <!-- 用户邀请表信息-->
+    <select id="getUserReward" resultType="com.wufanbao.api.oldclientservice.entity.UserReward">
+        select * from userreward where userid=#{userId}
+    </select>
+    <!--获取用户奖励表信息 -->
+    <select id="getInvitationUserInfo" resultType="com.wufanbao.api.oldclientservice.entity.InvitationUserInfo">
+        SELECT a.Mb AS mb,a.Portrait as portrait,r.CreateTime as createTime,r.Reward as reward,r.RewardValue as
+        rewardValue FROM USER a inner JOIN userinvitation i ON a.UserId = i.InvitedUserId inner JOIN userreward r ON
+        r.UserId = i.UserId where r.SourceId=i.InvitationId and r.UserId=#{userId}
+    </select>
+</mapper>

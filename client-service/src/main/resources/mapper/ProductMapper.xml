@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.ProductDao">
+    <select id="getProductsByMachineId" resultType="com.wufanbao.api.clientservice.entity.Product">
+        select
+        p.productGlobalId,
+        p.machineId,
+        p.companyId,
+        p.offlinePrice,
+        p.onlinePrice,
+        p.employeeId,
+        p.isActive,
+        p.createTime,
+        p.updateTime,
+        p.maxQuantity,
+        p.quantity,
+        p.lockQuantity,
+        p.useableQuantity,
+        p.turn,
+        p.remark,
+        p.offProductGlobalId,
+        p.isStaple,
+        p.relProductGlobalId,
+        p.prepareQuantity,
+        pg.productName,
+        pg.imageUrl,
+        pg.description,
+        pg.attachImageUrls,
+        pg.tasteType
+        from product as p join productglobal as pg on p.productGlobalId=pg.productGlobalId where machineid=#{machineId}
+        and p.isStaple=1
+    </select>
+    <select id="getMachineProductByProductId" resultType="com.wufanbao.api.clientservice.entity.Product">
+        select
+        p.productGlobalId,
+        p.machineId,
+        p.companyId,
+        p.offlinePrice,
+        p.onlinePrice,
+        p.employeeId,
+        p.isActive,
+        p.createTime,
+        p.updateTime,
+        p.maxQuantity,
+        p.quantity,
+        p.lockQuantity,
+        p.useableQuantity,
+        p.turn,
+        p.remark,
+        p.offProductGlobalId,
+        p.isStaple,
+        p.relProductGlobalId,
+        p.prepareQuantity,
+        pg.productName,
+        pg.imageUrl,
+        pg.description,
+        pg.attachImageUrls,
+        pg.tasteType from product as p join productglobal as pg on p.productGlobalId=pg.productGlobalId where
+        machineid=#{machineId} and p.productGlobalId=#{productGlobalId} and p.isStaple=1
+    </select>
+    <select id="getProduct" resultType="com.wufanbao.api.clientservice.entity.Product">
+        select pg.productName,p.useableQuantity from product as p join productglobal as pg on
+        p.ProductGlobalId=pg.ProductGlobalId where p.machineId=#{machineId} and p.productglobalId=#{productGlobalId}
+    </select>
+    <update id="unLockProduct">
+        update product set lockQuantity=lockQuantity-#{quantity},useableQuantity=useableQuantity+#{quantity} where
+        productGlobalId=#{productGlobalId} and machineId=#{machineId} and (lockQuantity-#{quantity})>=0
+    </update>
+    <update id="lockProduct">
+        update product set lockQuantity = (lockQuantity + #{quantity}),useableQuantity=(useableQuantity-#{quantity})
+        where machineId=#{machineId} and productglobalId=#{productGlobalId} and (useableQuantity-#{quantity}) >=0
+    </update>
+    <update id="lockMachineProduct">
+        update machine set lockQuantity=(lockQuantity+#{quantity}),useableQuantity=(useableQuantity-#{quantity}) where
+        machineId=#{machineId} and (useableQuantity-#{quantity})>=0
+    </update>
+    <update id="unLockMachineProduct">
+        UPDATE machine SET lockQuantity=(lockQuantity-#{quantity}),useableQuantity=(useableQuantity+#{quantity}) WHERE
+        machineId=#{machineId} and (lockQuantity-#{quantity})>=0
+    </update>
+</mapper>

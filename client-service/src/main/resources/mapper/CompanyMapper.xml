@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wufanbao.api.clientservice.dao.CompanyDao">
+    <!--<select id="getCitys" resultType="com.wufanbao.api.clientservice.entity.Area">
+        select distinct a.isActive,a.areaName,a.areaId,a.areaFullName,a.cityId,a.level,a.provinceId,a.zoneId from
+        company as c right join area as a on c.areaId=a.AreaId where c.CompanyType=2;
+    </select>-->
+    <select id="getCitys" resultType="com.wufanbao.api.clientservice.entity.Area">
+   SELECT DISTINCT a.isActive,a.areaName,a.areaId,a.areaFullName,a.cityId,a.level,a.provinceId,a.zoneId
+    FROM company AS c,AREA AS a,machine AS m
+    WHERE c.CompanyType=2 AND c.areaId=a.AreaId AND  m.putAreaId=a.areaId AND m.isActive=1 AND m.status=7
+    </select>
+    <select id="getCityByAreaName" resultType="com.wufanbao.api.clientservice.entity.Area">
+        select distinct a.isActive,a.areaName,a.areaId,a.areaFullName,a.cityId,a.level,a.provinceId,a.zoneId from
+        company as c right join area as a on c.areaId=a.AreaId where c.CompanyType=2 and a.AreaName=#{areaName};
+    </select>
+    <select id="getCityByAreaId" resultType="com.wufanbao.api.clientservice.entity.Area">
+        select distinct a.isActive,a.areaName,a.areaId,a.areaFullName,a.cityId,a.level,a.provinceId,a.zoneId from
+        company as c right join area as a on c.areaId=a.AreaId where c.CompanyType=2 and a.AreaId=#{areaId};
+    </select>
+</mapper>
