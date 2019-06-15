@@ -152,4 +152,29 @@ public class RabbitMQConfig {
     Binding bindingExchangeOrderFetchCompleted(Queue OrderFetchCompletedQueue, FanoutExchange fanoutExchangeOrderFetchCompleted) {
         return BindingBuilder.bind(OrderFetchCompletedQueue).to(fanoutExchangeOrderFetchCompleted);
     }
+
+    @Bean
+    public Queue userpayBindQueue(){
+        return new AnonymousQueue();
+    }
+    @Bean
+    public FanoutExchange fanoutExchangeUserpayBind(){
+        return new FanoutExchange("userpayBind");
+    }
+    @Bean
+    Binding bindingExchangeUserpayBind(Queue userpayBindQueue,FanoutExchange fanoutExchangeUserpayBind ){
+        return BindingBuilder.bind(userpayBindQueue).to(fanoutExchangeUserpayBind);
+    }
+    @Bean
+    public Queue userpayUnBindQueue(){
+        return new AnonymousQueue();
+    }
+    @Bean
+    public FanoutExchange fanoutExchangeUserpayUnBind(){
+        return new FanoutExchange("userpayUnBind");
+    }
+    @Bean
+    Binding bindingExchangeUserpayUnBind(Queue userpayUnBindQueue,FanoutExchange fanoutExchangeUserpayUnBind){
+        return BindingBuilder.bind(userpayUnBindQueue).to(fanoutExchangeUserpayUnBind);
+    }
 }

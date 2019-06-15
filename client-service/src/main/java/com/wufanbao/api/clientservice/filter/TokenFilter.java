@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
 
 @Order(1)
 @Component
@@ -39,13 +40,11 @@ public class TokenFilter extends GenericFilterBean {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-
         String requestURI = request.getRequestURI();
         if (requestURI.contains("/webapi/")) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
-
         //只对post 请求做认证
         if ("POST".equalsIgnoreCase(request.getMethod()) ) {
             try {

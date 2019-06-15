@@ -2,6 +2,7 @@ package com.wufanbao.api.clientservice.dao;
 
 import com.wufanbao.api.clientservice.entity.AppAD;
 import com.wufanbao.api.clientservice.entity.AppDiscover;
+import com.wufanbao.api.clientservice.entity.VersionControl;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -30,4 +31,10 @@ public interface AppAdDao {
      * @return
      */
     AppDiscover getAppDiscover(@Param("appDiscoverId") long appDiscoverId);
+
+    /**
+     * 获取版本控制信息
+     * @return
+     */
+    List<VersionControl> getVersionControl();
 }

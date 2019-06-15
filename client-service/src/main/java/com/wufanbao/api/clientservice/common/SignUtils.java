@@ -28,10 +28,16 @@ public class SignUtils {
     }
 
     public static void main(String[] args) {
-        String s="{\"body\":\"{\"pageIndex\":\"1\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558060459892\",\"version\":\"2\"}";
-        String str=s+"&"+"1558060459892"+"9dc1f470a02712426c3ee62fb8049eb3";
+        String s="{ \"body\" : \"{\\n \\\"loginNo\\\" : \\\"13588224138\\\",\\n \\\"loginType\\\" : \\\"password\\\",\\n \\\"password\\\" : \\\"12345678\\\"\\n}\", \"timestamp\" : \"20190222112909\", \"signType\" : \"md5\", \"version\" : 2 }";
+        String str=s+"&"+"20190222112909"+"9dc1f470a02712426c3ee62fb8049eb3";
         System.out.println(StringUtils.md5(str));
+        String s2="{\"body\":\"{\\\"pageIndex\\\":\\\"1\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
+        String str2=s2+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
+        System.out.println(StringUtils.md5(str2));
 
+        String s3="{\"body\":\"{\\\"versionCode\\\":\\\"2.1.1\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
+        String str3=s3+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
+        System.out.println(StringUtils.md5(str3));
     }
 
     /*public static void main(String args[]){

@@ -232,10 +232,10 @@
 
     <insert id="insertUser" parameterType="com.wufanbao.api.clientservice.entity.User">
         INSERT INTO
-        user(userId,parentUserId,userName,loginNo,password,payPassword,userType,mb,portrait,invitationCode,isActive,createTime,resetPasswordNeeded,isAuth,isCredit,companyPayment,
+        user(userId,parentUserId,userName,loginNo,password,payPassword,userType,mb,portrait,invitationCode,isActive,createTime,resetPasswordNeeded,sex,isAuth,isCredit,companyPayment,
         integral,balance,usableBalance,lockBalance,creditAmount,creditUasbelAmount,creditLimit)
         VALUES
-        (#{userId},#{parentUserId},#{userName},#{loginNo},#{password},#{payPassword},#{userType},#{mb},#{portrait},#{invitationCode},#{isActive},CURRENT_TIMESTAMP,#{resetPasswordNeeded},#{isAuth},#{isCredit},#{companyPayment},
+        (#{userId},#{parentUserId},#{userName},#{loginNo},#{password},#{payPassword},#{userType},#{mb},#{portrait},#{invitationCode},#{isActive},CURRENT_TIMESTAMP,#{resetPasswordNeeded},#{sex},#{isAuth},#{isCredit},#{companyPayment},
         #{integral},#{balance},#{usableBalance},#{lockBalance},#{creditAmount},#{creditUasbelAmount},#{creditLimit})
     </insert>
     <select id="getOpenId" resultType="String">

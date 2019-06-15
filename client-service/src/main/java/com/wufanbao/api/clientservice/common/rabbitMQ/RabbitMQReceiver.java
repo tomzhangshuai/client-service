@@ -1,9 +1,6 @@
 package com.wufanbao.api.clientservice.common.rabbitMQ;
 
-import com.wufanbao.api.clientservice.common.CommonFun;
-import com.wufanbao.api.clientservice.common.Data;
-import com.wufanbao.api.clientservice.common.RedisUtils;
-import com.wufanbao.api.clientservice.common.StringUtils;
+import com.wufanbao.api.clientservice.common.*;
 import com.wufanbao.api.clientservice.entity.Machine;
 import com.wufanbao.api.clientservice.entity.UserOrder;
 import com.wufanbao.api.clientservice.entity.UserOrderLine;
@@ -18,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
@@ -31,41 +29,43 @@ public class RabbitMQReceiver {
     @Autowired
     private UserOrderService userOrderService;
     @Autowired
-    private  MachineService machineService;
+    private MachineService machineService;
     @Autowired
     private UserService userService;
     @Autowired
     private MessageService messageService;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private final String templateIdTake="PSGgOqrlQCbI70c33qP48A-UTUGLMrL_4hTj7cdNTn0";
+    private final String templateIdTake = "PSGgOqrlQCbI70c33qP48A-UTUGLMrL_4hTj7cdNTn0";
+
     //用户取餐
-//    @RabbitListener(queues = "#{sendMachineOrderFetchQueue.name}")
     @RabbitListener(queues = "#{OrderFetchCompletedQueue.name}")
-    public void takeFood(byte[] body)throws Exception{
-        String message = new String(body, "UTF-8");
-        String userOrderIdStr=message.substring(11,message.length()-1);
+    public void takeFood(byte[] body) {
+        String message = null;
+        try {
+            message = new String(body, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.info("用户取餐推送异常");
+            logger.error(commonFun.getStackTraceInfo(e));
+        }
+        String userOrderIdStr = message.substring(11, message.length() - 1);
         System.out.println(userOrderIdStr);
-        long userOrderId=Long.parseLong(userOrderIdStr);
-        UserOrder userOrder=userOrderService.findUserOrder(userOrderId);
-        int originateid=userOrder.getOriginateId();
-        if(originateid==4){
-            Machine machine= machineService.getMachine(userOrder.getMachineId());
+        long userOrderId = Long.parseLong(userOrderIdStr);
+        UserOrder userOrder = userOrderService.findUserOrder(userOrderId);
+        int originateid = userOrder.getOriginateId();
+        if (originateid == 4) {
+            Machine machine = machineService.getMachine(userOrder.getMachineId());
             //机器名称
-            String machineName=machine.getPutMachineName();
-            List<UserOrderLine> userOrderLines=userOrderService.getUserOrderLine(userOrderId);
+            String machineName = machine.getPutMachineName();
+            List<UserOrderLine> userOrderLines = userOrderService.getUserOrderLine(userOrderId);
             //出餐数量
-            int quantityint=0;
+            int quantityint = 0;
             for (UserOrderLine userOrderLine : userOrderLines) {
-                quantityint+=userOrderLine.getQuantity();
+                quantityint += userOrderLine.getQuantity();
             }
-            long userId=userOrder.getUserId();
-            String openId=userService.getOpenId(userId);
-            String quantity=String.valueOf(quantityint);
-            /*Data data=new Data();
-            data.put("machineName", machineName);
-            data.put("userOrderId", userOrderId);
-            data.put("quantity",quantity);*/
+            long userId = userOrder.getUserId();
+            String openId = userService.getOpenId(userId);
+            String quantity = String.valueOf(quantityint);
             try {
                 //消息推送
                 userOrderService.sendTemplateTake(userOrderId, openId, quantity, machineName, templateIdTake);
@@ -76,7 +76,7 @@ public class RabbitMQReceiver {
             }
         }
         //APP内支付  暂时不用
-       /* if (originateid == 1 || originateid == 2 || originateid == 3) {
+        /*if (originateid == 1 || originateid == 2 || originateid == 3) {
             Map<String, String> param = new HashMap<>();
            String mb=userOrderService.getUserMb(userOrderId);
             param.put("id", mb);
@@ -86,7 +86,7 @@ public class RabbitMQReceiver {
             param.put("userOrderId", userOrderIdstr);
             try {
                 messageService.jpushAll(param);
-//                logger.info("订单信息提醒推送成功，订单" + userOrderIdstr);
+                logger.info("订单信息提醒推送成功，订单" + userOrderIdstr);
             } catch (Exception ex) {
              logger.info("订单信息提醒推送失败，订单" + userOrderIdstr);
              logger.error(commonFun.getStackTraceInfo(ex));
@@ -94,7 +94,47 @@ public class RabbitMQReceiver {
         }*/
     }
 
+    @RabbitListener(queues = "#{userpayBindQueue.name}")
+    public void userpayBindSend(byte[] body) {
+        try {
+            String message = new String(body, "UTF-8");
+            Map<String, Object> objectMap = JsonUtils.GsonToMaps(message);
+            String userId=String.valueOf(objectMap.get("userId"));
+            String mb=String.valueOf(objectMap.get("mb"));
+            Map<String, String> param = new HashMap<>();
+            param.put("id",mb);
+            param.put("msg","饭票有了，任意吃");
+            param.put("title","开通亲密付");
+            param.put("type","2");
+            param.put("userId",userId);
+            messageService.jpushAll(param);
+            logger.info("亲密付消息推送成功"+mb);
+        } catch (Exception e) {
+            logger.info("亲密付绑定推送异常！");
+            logger.error(commonFun.getStackTraceInfo(e));
+        }
+    }
 
+    @RabbitListener(queues = "#{userpayUnBindQueue.name}")
+    public void userpayUnBindSend(byte[] body) {
+        try {
+            String message = new String(body, "UTF-8");
+            Map<String, Object> objectMap = JsonUtils.GsonToMaps(message);
+            String userId=String.valueOf(objectMap.get("userId"));
+            String mb=String.valueOf(objectMap.get("mb"));
+            Map<String, String> param = new HashMap<>();
+            param.put("id",mb);
+            param.put("msg","伤害了一个爱你的人");
+            param.put("title","解除亲密付");
+            param.put("type","3");
+            param.put("userId",userId);
+            messageService.jpushAll(param);
+            logger.info("亲密付消息推送成功"+mb);
+        } catch (Exception e) {
+            logger.info("亲密付绑定推送异常！");
+            logger.error(commonFun.getStackTraceInfo(e));
+        }
+    }
 
     //优惠券
     @RabbitListener(queues = "#{userCouponEx6Queue.name}")
@@ -356,23 +396,6 @@ public class RabbitMQReceiver {
 //        };
 //        channel.basicConsume(queueName, true, consumer);//队列会自动删除*/
 //    }
-//
-//    //测试
-//    @RabbitListener(queues = "#{zhangShuaiTestQueue.name}")
-//    public void Test1(String message) {
-////    public void Test1(byte[] body) {
-//        try {
-//            System.out.println(message);
-////            String message = new String(body, "UTF-8");
-////            JSONObject jsonObject = new JSONObject(message);
-//            logger.info(message);
-//            System.out.println("******************************************************************************");
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//    }
-//
-//
 ////    public int getUserCoupon(long couponDefinitionId,long userId){
 ////        UserCouponInfo userCouponInfo=userCouponDao.selectCouponInfo(couponDefinitionId);
 ////        ValidityRule validityRules= JSON.parseObject(userCouponInfo.getValidityRule(), ValidityRule.class);

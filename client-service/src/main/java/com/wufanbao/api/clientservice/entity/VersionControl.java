@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 // VersionControl,APP 版本控制
 public class VersionControl {
     //版本控制Id,
-    private long versionId;
+    private String versionCode;
     //版本号,
-    private String versionNumber;
-    //安卓版本名字,
     private String versionName;
+    /*//安卓版本名字,
+    private String versionNumber;*/
     //版本描述,
     private String content;
     //下载地址,
@@ -23,20 +23,12 @@ public class VersionControl {
     //强制升级力度,
     private int forceLevel;
 
-    public long getVersionId() {
-        return this.versionId;
+    public String getVersionCode() {
+        return this.versionCode;
     }
 
-    public void setVersionId(long versionId) {
-        this.versionId = versionId;
-    }
-
-    public String getVersionNumber() {
-        return this.versionNumber;
-    }
-
-    public void setVersionNumber(String versionNumber) {
-        this.versionNumber = versionNumber;
+    public void setVersionCode(String versionCode) {
+        this.versionCode = versionCode;
     }
 
     public String getVersionName() {

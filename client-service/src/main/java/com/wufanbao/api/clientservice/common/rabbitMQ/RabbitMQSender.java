@@ -28,4 +28,10 @@ public class RabbitMQSender {
     public void unLockSend(Object message) throws IOException, TimeoutException {
         amqpTemplate.convertAndSend("OrderUnLock", "", String.valueOf(message).getBytes());
     }
+    public void userpaybindSend(Object message){
+        amqpTemplate.convertAndSend("userpayBind","",String.valueOf(message).getBytes());
+    }
+    public void userpayUnbindSend(Object message){
+        amqpTemplate.convertAndSend("userpayUnBind","",String.valueOf(message).getBytes());
+    }
 }

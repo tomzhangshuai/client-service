@@ -1,9 +1,10 @@
 package com.wufanbao.api.clientservice.runner;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.wufanbao.api.clientservice.common.CommonFun;
 import com.wufanbao.api.clientservice.common.rabbitMQ.RabbitMQSender;
 import com.wufanbao.api.clientservice.service.UserService;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -39,20 +40,16 @@ public class TaskRunner {
      * 每天的8点开始，2小时执行一次：0 0 8/2 * * ?
      */
 
- /*   @Scheduled(cron = "0/5 * * * * ?")
+/*    @Scheduled(cron = "0/59 * * * * ?")
     public void test1(){
-        String message="hello帅哥!";
-        String userOrderId="25909771075585";
-        JSONObject jsonObjectMesage=new JSONObject();
-        String userOrderIdStr=String.valueOf(userOrderId);
-        jsonObjectMesage.put("userOrderIdStr",userOrderIdStr);
+        com.alibaba.fastjson.JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", String.valueOf("25490289131521"));
+        jsonObject.put("mb", "13588224138");
         try {
-            rabbitMQSender.sendTakeFood(jsonObjectMesage);
+            rabbitMQSender.userpaybindSend(jsonObject);
         }catch (Exception e){
             e.printStackTrace();
         }
-
-//        amqpTemplate.convertAndSend("zhangShuaiTestQueue", "", String.valueOf(message).getBytes());
 
     }*/
 

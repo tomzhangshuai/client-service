@@ -6,7 +6,16 @@ import com.wufanbao.api.clientservice.common.wechat.WechatAuth;
 import com.wufanbao.api.clientservice.config.ClientSetting;
 import com.wufanbao.api.clientservice.entity.*;
 import com.wufanbao.api.clientservice.service.ApiServiceException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +42,21 @@ public class IndexController extends BaseController {
         return dateFormat.format(new Date());
     }
 
+    @PostMapping("versionControl")
+    public ResponseData getVersionControl(String data){
+        Map<String, String> map = JsonUtils.GsonToMaps(data);
+        String version=map.get("version");
+        String versionCode=map.get("versionCode");
+        if(StringUtils.isNullOrEmpty(versionCode)){
+            responseData.error("获取当前版本信息失败，请稍后重试").sign(null);
+        }
+        try {
+            Data result = appADService.getVersionControl(versionCode);
+            return responseData.success().sign(result);
+        } catch (ApiServiceException e) {
+            return responseData.error(e).sign(null);
+        }
+    }
     /**
      * 获取服务的版本
      *
@@ -43,6 +67,7 @@ public class IndexController extends BaseController {
         String c = clientSetting.getPayCallback();
         return clientSetting.getVersion();
     }
+
 
     /**
      * 获取开放城市

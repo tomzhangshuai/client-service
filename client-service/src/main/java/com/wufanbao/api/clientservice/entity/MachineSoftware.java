@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 
 // MachineSoftware,机器软件
 public class MachineSoftware {
+
+
+
     //Version,
     private String version;
     //版本说明,

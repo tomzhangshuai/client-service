@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.wufanbao.api.clientservice.common.*;
 import com.wufanbao.api.clientservice.common.alipay.AliPay;
+import com.wufanbao.api.clientservice.common.rabbitMQ.RabbitMQSender;
 import com.wufanbao.api.clientservice.common.wechat.AccessToken;
 import com.wufanbao.api.clientservice.common.wechat.UserInfo;
 import com.wufanbao.api.clientservice.common.wechat.WechatPay;
@@ -39,6 +40,8 @@ public class UserService {
     private ClientSetting clientSetting;
     @Autowired
     private UserOrderDao userOrderDao;
+    @Autowired
+    private RabbitMQSender rabbitMQSender;
 
     //根据手机号生成存储短信验证吗的Key
     private String getKeyByPhone(String phone) {
@@ -488,6 +491,8 @@ public class UserService {
         user.setMb(user.getLoginNo());//登录号就是手机号
         user.setPassword("");
         user.setPayPassword("");
+        user.setSex(user.getSex());
+        System.out.println(user.getSex());
         user.setPortrait(user.getPortrait());
         user.setUserType(UserType.value(UserType.Single));
         user.setInvitationCode(Long.toHexString(user.getUserId()));//邀请码
@@ -685,9 +690,9 @@ public class UserService {
         String openId = ushare.getOpenid();
         User user = new User();
         user.setUserName(ushare.getName());
-        if (ushare.getGender() == "男") {
+        if ("男".equals(ushare.getGender())) {
             user.setSex(1);
-        } else if (ushare.getGender() == "女") {
+        } else if ("女".equals(ushare.getGender())) {
             user.setSex(2);
         } else {
             user.setSex(0);
@@ -727,6 +732,10 @@ public class UserService {
 //                if (userDao.insertUserBinding(user.getUserId(), uid,openId,bingdingType) <= 0) {
                 if (userDao.insertUserBinding(user.getUserId(), uid, bingdingType) <= 0) {
                     throw new ApiServiceException("添加第三方登录商户信息失败");
+                }
+                if(StringUtils.isNullOrEmpty(user.getPortrait())){
+                    if(userDao.updatePortrait(user.getUserId(),ushare.getIconurl())<=0)
+                        throw new ApiServiceException("更新头像失败");
                 }
             } else {
                 if (user.getUserId() != userBinding.getUserId()) {//修改绑定关系
@@ -992,9 +1001,7 @@ public class UserService {
         if (StringUtils.isNullOrEmpty(password)) {
             throw new ApiServiceException("支付密码不能为空");
         }
-
         User sonUser = checkBindUser(userId, phone);//验证是否可以绑定
-
         User user = userDao.getUser(userId);
         String payPassword = DigestUtils.md5Hex(password);//加密
         if (!user.getPayPassword().equals(payPassword)) {
@@ -1014,11 +1021,15 @@ public class UserService {
         if (userDao.insertUserfamilypayrelation(userId, sonUser.getUserId(), quotaType, limitQuota, totalQuota, consumeQuota, totalAmount, true) <= 0) {
             throw new ApiServiceException("绑定亲密付款失败，请重试");
         }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", String.valueOf(sonUser.getUserId()));
+        jsonObject.put("mb", phone);
+        rabbitMQSender.userpaybindSend(jsonObject);
     }
 
     //解除绑定用户关系
     @Transactional(rollbackFor = ApiServiceException.class)
-    public void unBindUser(long userId, long masterUserId) throws ApiServiceException {
+    public void unBindUser(long userId, long masterUserId,int type) throws ApiServiceException {
         if (userId <= 0 || masterUserId <= 0) {
             throw new ApiServiceException("解除绑定用户id或者主账号id参数异常");
         }
@@ -1028,6 +1039,18 @@ public class UserService {
         if (userDao.deleteUserfamilypayrelation(userId, masterUserId) <= 0) {
             throw new ApiServiceException("解除绑定失败，请重试");
         }
+        long  id=masterUserId;
+        if(type==1){
+            id=userId;
+        }
+        User user = userDao.getUser(id);
+        if(user==null){
+            throw new ApiServiceException("解除绑定失败，请重试");
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userId", String.valueOf(user.getUserId()));
+        jsonObject.put("mb", user.getMb());
+        rabbitMQSender.userpayUnbindSend(jsonObject);
     }
 
     //修改限额

@@ -39,13 +39,10 @@ public class MessageService {
         PushPayload payload = PushPayload.newBuilder()
                 .setPlatform(Platform.all())  //所有平台的用户
                 .setAudience(Audience.alias(parm.get("id")))
-//                .setAudience(Audience.all())
-//                .setAudience(Audience.registrationId(parm.get("id")))//registrationId指定用户
                 .setNotification(Notification.newBuilder()
                         .addPlatformNotification(IosNotification.newBuilder() //发送ios
                                 .setAlert(parm.get("msg")) //消息体
                                 .setBadge(+1)
-//                                .setSound("happy") //ios提示音
                                 .addExtras(parm) //附加参数
                                 .build())
                         .addPlatformNotification(AndroidNotification.newBuilder() //发送android

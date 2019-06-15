@@ -602,7 +602,6 @@ public class UserController extends BaseController {
         } catch (Exception ex) {
             logger.error(commonFun.getStackTraceInfo(ex));
         }
-
         if (map.containsKey("return_code") && map.get("return_code").toString().equalsIgnoreCase("SUCCESS")) {
             try {
                 WechatPay wechatPay = new WechatPay();
@@ -801,9 +800,9 @@ public class UserController extends BaseController {
             int type = Integer.parseInt(typeStr);
             long userId1 = Long.parseLong(userIdStr);
             if (type == 1) {
-                userService.unBindUser(userId1, userId);
+                userService.unBindUser(userId1, userId,type);
             } else {
-                userService.unBindUser(userId, userId1);
+                userService.unBindUser(userId, userId1,type);
             }
             return responseData.success().sign(null);
         } catch (ApiServiceException e) {
