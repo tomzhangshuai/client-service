@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.util.*;
 
 @Service
@@ -147,8 +148,17 @@ public class UserService {
     }
 
     //获取用户消息列表
-    public List<Data> getUserMessages(long userId, int isRead, int pageStart, int pageSize) {
-        return userDao.getUserMessages(userId, isRead, pageSize, pageStart);
+    public List<Data> getUserMessages(long userId, int isRead, int pageStart, int pageSize) throws ParseException {
+        List<Data> userMessages = userDao.getUserMessages(userId, isRead, pageSize, pageStart);
+        Date afterMonth = DateUtils.getBeforeMonth(12);
+        System.out.println(afterMonth);
+        for (Data userMessage : userMessages) {
+            Date createTime = DateUtils.StringToDate(String.valueOf(userMessage.get("createTime")));
+            if(DateUtils.getDiffMinutes(afterMonth,createTime)<0){
+                userMessage.put("createTime",DateUtils.DateToString(createTime,"MM-dd HH:mm:ss"));
+            }
+        }
+        return userMessages;
     }
 
     //设置已读
@@ -1010,14 +1020,12 @@ public class UserService {
         if (userDao.bindUser(sonUser.getUserId(), userId) <= 0) {
             throw new ApiServiceException("绑定亲密付款失败，请重试");
         }
-
         BigDecimal totalQuota = BigDecimal.valueOf(600);
         int quotaType = 2;
         boolean limitQuota = true;
         boolean disabled = true;
         BigDecimal consumeQuota = BigDecimal.valueOf(0);
         BigDecimal totalAmount = BigDecimal.valueOf(0);
-
         if (userDao.insertUserfamilypayrelation(userId, sonUser.getUserId(), quotaType, limitQuota, totalQuota, consumeQuota, totalAmount, true) <= 0) {
             throw new ApiServiceException("绑定亲密付款失败，请重试");
         }
@@ -1167,7 +1175,22 @@ public class UserService {
             throw new ApiServiceException("失效优惠券失败");
         }
     }
+    //获取当天失效的优惠券
+    public void getInvalidCoupon(){
+        List<UserCoupon> userCoupons=userDao.getInvalidCoupon();
+        if(userCoupons==null||userCoupons.size()==0){
+            return;
+        }
+        JSONObject jsonObject=new JSONObject();
+        for (UserCoupon userCoupon : userCoupons) {
+            long couponDefinitionId = userCoupon.getCouponDefinitionId();
+            CouponDefinition couponDefinition = userDao.getCouponDefinition(couponDefinitionId);
+            jsonObject.put("couponName",couponDefinition.getCouponName());
+            jsonObject.put("userId",userCoupon.getUserId());
+            rabbitMQSender.sendInvalidCoupon(jsonObject);
+        }
 
+    }
     //获取抽奖商品数据
     public Data getPrizes(long userId) {
         Data data = new Data();

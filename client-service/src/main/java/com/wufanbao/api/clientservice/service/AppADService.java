@@ -11,6 +11,7 @@ import com.wufanbao.api.clientservice.entity.VersionControl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,28 +48,21 @@ public class AppADService {
         appDiscover.setImageUrl(clientSetting.getResource() + appDiscover.getImageUrl());
         return appDiscover;
     }
-
-    public Data getVersionControl(String versionCode) throws ApiServiceException {
-        List<VersionControl> versionControls=appAdDao.getVersionControl();
-        if(versionControls.size()==0){
-            throw new ApiServiceException("无法获取最新版本信息");
+    public Data getVersionControl(String versionCode,int versionType) throws ApiServiceException {
+        VersionControl versionControl=appAdDao.getVersionControl(versionType);
+        String versionLevel=appAdDao.getVersionLevel(versionCode,versionType);
+        if(versionControl==null||StringUtils.isNullOrEmpty(versionLevel)){
+            throw new ApiServiceException("无法获取版本信息");
         }
-        Data data=new Data();
-        for (VersionControl version:versionControls) {
-            String dbVersionCode=version.getVersionCode();
-            if(StringUtils.isNullOrEmpty(dbVersionCode)){
-                throw new ApiServiceException("无法获取版本号");
-            }
-            if(versionCode.equals(dbVersionCode)){
-                data.put("versionName",version.getVersionName());
-                data.put("foreceLevel",String.valueOf(version.getForceLevel()));
-                data.put("downloadLink",version.getDownloadLink());
-                data.put("content",version.getContent());
-                data.put("effectivtime", DateUtils.DateToString(version.getEffectiveTime(),"yyyy-MM-dd HH:mm:ss"));
-                break;
-            }
+        if(versionControl.getVersionCode()!=versionCode){
+            Data data=new Data();
+            data.put("versionName",versionControl.getVersionName());
+            data.put("foreceLevel",versionLevel);
+            data.put("downloadLink",versionControl.getDownloadLink());
+            data.put("content",versionControl.getContent());
+            data.put("effectivtime", DateUtils.DateToString(versionControl.getEffectiveTime(),"yyyy-MM-dd HH:mm:ss"));
+            return data;
         }
-        return data;
+        return null;
     }
-
 }

@@ -28,16 +28,25 @@ public class SignUtils {
     }
 
     public static void main(String[] args) {
-        String s="{ \"body\" : \"{\\n \\\"loginNo\\\" : \\\"13588224138\\\",\\n \\\"loginType\\\" : \\\"password\\\",\\n \\\"password\\\" : \\\"12345678\\\"\\n}\", \"timestamp\" : \"20190222112909\", \"signType\" : \"md5\", \"version\" : 2 }";
+        //登录token
+        /*String s="{ \"body\" : \"{\\n \\\"loginNo\\\" : \\\"13588224138\\\",\\n \\\"loginType\\\" : \\\"password\\\",\\n \\\"password\\\" : \\\"12345678\\\"\\n}\", \"timestamp\" : \"20190222112909\", \"signType\" : \"md5\", \"version\" : 2 }";
         String str=s+"&"+"20190222112909"+"9dc1f470a02712426c3ee62fb8049eb3";
         System.out.println(StringUtils.md5(str));
         String s2="{\"body\":\"{\\\"pageIndex\\\":\\\"1\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
         String str2=s2+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
         System.out.println(StringUtils.md5(str2));
-
-        String s3="{\"body\":\"{\\\"versionCode\\\":\\\"2.1.1\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
+        String s3="{\"body\":\"{\\\"versionCode\\\":\\\"2.1.1\\\",\\\"versionType\\\":\\\"1\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
         String str3=s3+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
-        System.out.println(StringUtils.md5(str3));
+        System.out.println(StringUtils.md5(str3));*/
+
+        String s4="{\"body\":\"{\\\"password\\\":\\\"147258\\\",\\\"phone\\\":\\\"18338666518\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
+        String str4=s4+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
+        System.out.println(StringUtils.md5(str4));
+
+        String s5="{\"body\":\"{\\\"pageIndex\\\":\\\"1\\\",\\\"isRead\\\":\\\"0\\\"}\",\"machineId\":\"\",\"signType\":\"md5\",\"timestamp\":\"1558061616283\",\"version\":\"2\"}";
+        String str5=s5+"&"+"1558061616283"+"9dc1f470a02712426c3ee62fb8049eb3";
+        System.out.println(StringUtils.md5(str5));
+
     }
 
     /*public static void main(String args[]){

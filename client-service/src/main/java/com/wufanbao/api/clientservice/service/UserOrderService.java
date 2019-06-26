@@ -103,13 +103,13 @@ public class UserOrderService {
                 mainCount = mainCount + refund;
             }
             if (productDao.unLockProduct(machineId, productGlobalId, refund) <= 0) {
-                logger.error("更新商品库存失败!"+userOrderId+","+productGlobalId);
+                logger.error("更新商品库存失败!" + userOrderId + "," + productGlobalId);
                 throw new ApiServiceException("更新商品库存失败");
             }
         }
         if (productDao.unLockMachineProduct(machineId, mainCount) <= 0) {
-            logger.error("更新商品库存失败!"+userOrderId+","+machineId);
-            throw new ApiServiceException("更新机器库存失败"+userOrderId+","+machineId);
+            logger.error("更新商品库存失败!" + userOrderId + "," + machineId);
+            throw new ApiServiceException("更新机器库存失败" + userOrderId + "," + machineId);
         }
         /*try {
             JSONObject jsonObject = new JSONObject();
@@ -201,8 +201,8 @@ public class UserOrderService {
         }
         //亲密付
         Data familyPay = userDao.getFamilyPay(userId);
-        if(familyPay!=null){
-            familyPay.put("usableBalance",amount);
+        if (familyPay != null) {
+            familyPay.put("usableBalance", amount);
         }
         data.put("isFamilyPay", familyPay != null);
         data.put("familyPay", familyPay);//传递主账号余额值。。。。。。。。
@@ -316,7 +316,6 @@ public class UserOrderService {
             //验证
             mathAmount = mathAmount.subtract(companyPayAmount);
         }
-
         //验证优惠券
         if (isDiscount) {
             List<Data> results = getUseableUserCoupons(userId, productIds, amount, areaName);//获取用户可用优惠券
@@ -340,7 +339,7 @@ public class UserOrderService {
             if (payType == 2 || payType == 3) {//微信或支付宝付款不能为0
                 mathAmount = BigDecimal.valueOf(0.01);
             }
-        }else{
+        } else {
             //验证金额
             if (mathAmount.compareTo(actualAmount) != 0) {
                 throw new ApiServiceException("订单金额或者支付方式选择错误");
@@ -375,9 +374,9 @@ public class UserOrderService {
         if (isDiscount) {
             couponPay(userOrderId, userOrder.getDiscountId(), userOrder.getDiscountAmount());
         }
-        if(userOrder.getUserOrderId()>0){
-            redisUtils.set("str"+userOrder.getUserOrderId(),String.valueOf(userOrder.getUserOrderId()));
-            redisUtils.expire("str"+userOrder.getUserOrderId(),175);
+        if (userOrder.getUserOrderId() > 0) {
+            redisUtils.set("str" + userOrder.getUserOrderId(), String.valueOf(userOrder.getUserOrderId()));
+            redisUtils.expire("str" + userOrder.getUserOrderId(), 175);
         }
         return userOrder;
     }
@@ -391,7 +390,7 @@ public class UserOrderService {
         BigDecimal familyPayAmount = userOrder.getFamilyPayAmount();//亲密付金额
         BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
         long discountId = userOrder.getDiscountId();//优惠券Id
-        userOrder= payQuery(userOrderId,userOrder.getPayType());
+        userOrder = payQuery(userOrderId, userOrder.getPayType());
         if (userOrder.getStatus() != 2) {//待支付的订单才能取消订单
             if (userOrder.getStatus() >= 3) {
                 throw new ApiServiceException("订单已支付，无法取消");
@@ -422,13 +421,13 @@ public class UserOrderService {
 
     //失效订单
     @Transactional(rollbackFor = ApiServiceException.class)
-    public  List<UserOrder>  getInvalidUserOrder(Long userOrderId) throws ApiServiceException {
+    public List<UserOrder> getInvalidUserOrder(Long userOrderId) throws ApiServiceException {
         return userOrderDao.getInvalidUserOrder(userOrderId);
     }
 
     //超过时间没有取走的订单，自动退款
     @Transactional(rollbackFor = ApiServiceException.class)
-    public  List<UserOrder>  getMakingUserOrder(Long userOrderId) throws ApiServiceException {
+    public List<UserOrder> getMakingUserOrder(Long userOrderId) throws ApiServiceException {
         return userOrderDao.getMakingUserOrder(userOrderId);
     }
 
@@ -439,7 +438,7 @@ public class UserOrderService {
             throw new ApiServiceException("订单Id错误");
         }
         UserOrder userOrder = userOrderDao.getUserOrder(userOrderId);
-        userOrder= payQuery(userOrderId,userOrder.getPayType());
+        userOrder = payQuery(userOrderId, userOrder.getPayType());
         if (userOrder.getStatus() != 2) {
             throw new ApiServiceException("订单不在待支付状态，无法进行支付");
         }
@@ -450,13 +449,13 @@ public class UserOrderService {
                         if (StringUtils.isNullOrEmpty(ip)) {
                             throw new ApiServiceException("客户端Ip地址不能为空");
                         }
-                        int originateId=2;
-                        if(userOrderDao.updateOriginateId(originateId,userOrderId)<=0){
+                        int originateId = 2;
+                        if (userOrderDao.updateOriginateId(originateId, userOrderId) <= 0) {
                             throw new ApiServiceException("订单付款失败，请重试");
                         }
                         WechatPay wechatPay = new WechatPay();
                         Map<String, String> map = wechatPay.payOrder(String.valueOf(userOrderId), "APP", "", amount, "伍饭宝-下单点餐支付", ip, clientSetting.getPayCallback() + "/webapi/wechat/payNotify");
-                        if(redisUtils.get("str"+userOrder.getUserOrderId())==null){
+                        if (redisUtils.get("str" + userOrder.getUserOrderId()) == null) {
                             throw new ApiServiceException("订单已过期，请重新下单");
                         }
                         return map;
@@ -464,12 +463,12 @@ public class UserOrderService {
                         throw new ApiServiceException("微信支付失败:" + ex.getMessage());
                     }
                 case 3://支付宝
-                    if(redisUtils.get("str"+userOrder.getUserOrderId())==null){
+                    if (redisUtils.get("str" + userOrder.getUserOrderId()) == null) {
                         throw new ApiServiceException("订单已过期，请重新下单");
                     }
                     try {
-                        int originateId=3;
-                        if(userOrderDao.updateOriginateId(originateId,userOrderId)<=0){
+                        int originateId = 3;
+                        if (userOrderDao.updateOriginateId(originateId, userOrderId) <= 0) {
                             throw new ApiServiceException("订单付款失败，请重试");
                         }
                         return aliPay.appPayOrder(String.valueOf(userOrderId), amount, "伍饭宝-下单点餐支付", "下单支付", clientSetting.getPayCallback() + "/webapi/alipay/payNotify");
@@ -478,11 +477,11 @@ public class UserOrderService {
                     }
                 case 4://余额
                     checkPayPassword(userId, payPassword);
-                    if(redisUtils.get("str"+userOrder.getUserOrderId())==null){
+                    if (redisUtils.get("str" + userOrder.getUserOrderId()) == null) {
                         throw new ApiServiceException("订单已过期，请重新下单");
                     }
-                    int originateId=1;
-                    if(userOrderDao.updateOriginateId(originateId,userOrderId)<=0){
+                    int originateId = 1;
+                    if (userOrderDao.updateOriginateId(originateId, userOrderId) <= 0) {
                         throw new ApiServiceException("订单付款失败，请重试");
                     }
                     balancePay(userId, userOrder, amount);
@@ -519,7 +518,7 @@ public class UserOrderService {
         }
         //优惠券金额
         boolean isDiscount = userOrder.getDiscountAmount().compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
-       /* if (isDiscount) {
+        /*if (isDiscount) {
             couponPay(userOrderId, userOrder.getDiscountId(), userOrder.getDiscountAmount());
         }*/
         if (userOrder.getActualAmount().compareTo(amount) != 0) {
@@ -532,8 +531,8 @@ public class UserOrderService {
             if (StringUtils.isNullOrEmpty(ip)) {
                 throw new ApiServiceException("客户端Ip地址不能为空");
             }
-            int originateId=4;
-            if(userOrderDao.updateOriginateId(originateId,userOrderId)<=0){
+            int originateId = 4;
+            if (userOrderDao.updateOriginateId(originateId, userOrderId) <= 0) {
                 throw new ApiServiceException("订单付款失败，请重试");
             }
             Data data = wechatAuth.getPay(String.valueOf(userOrderId), openId, amount, "伍饭宝-下单点餐支付", ip, clientSetting.getPayCallback() + "/webapi/wechat/payNotify");
@@ -565,8 +564,8 @@ public class UserOrderService {
         if (payType != 3) {
             throw new ApiServiceException("支付方式选择错误");
         }
-        int originateId=5;
-        if(userOrderDao.updateOriginateId(originateId,userOrderId)<=0){
+        int originateId = 5;
+        if (userOrderDao.updateOriginateId(originateId, userOrderId) <= 0) {
             throw new ApiServiceException("订单付款失败，请重试");
         }
         try {
@@ -587,7 +586,7 @@ public class UserOrderService {
         if (userOrder.getStatus() == 3) {
             return userOrder;
         }
-        if(userOrder.getStatus()==0){
+        if (userOrder.getStatus() == 0) {
             throw new ApiServiceException("订单已取消，请重新下单");
         }
         switch (payType) {
@@ -639,8 +638,8 @@ public class UserOrderService {
         if (userOrder.getStatus() != -1) {//不在退款中
             return userOrder;
         }
-        if(userOrder.getPayTime()==null){
-            if(userOrderDao.updateStatus(userOrderId)<=0){
+        if (userOrder.getPayTime() == null) {
+            if (userOrderDao.updateStatus(userOrderId) <= 0) {
                 throw new ApiServiceException("订单退款失败");
             }
             return userOrder;
@@ -793,6 +792,8 @@ public class UserOrderService {
             if (userDao.insertUserCapital(capitalLogId, masterUserId, amount, "familyRefund", userOrderId, "亲密付退款") <= 0) {
                 throw new ApiServiceException("插入资金流水失败");
             }
+            /*update userordercapital set refund=1,refundAmount=#{refundAmount},refundTime=CURRENT_TIMESTAMP where
+            userOrderId=#{userOrderId} and capitalType=#{capitalType}*/
             if (userOrderDao.refundUserOrderCapital(userOrderId, 5, amount) <= 0) {
                 throw new ApiServiceException("退款修改订单资金记录失败");
             }
@@ -994,13 +995,14 @@ public class UserOrderService {
     //支付宝／微信 支付成功后的通知 2019.3.23 支付失败，退款
     @Transactional(rollbackFor = ApiServiceException.class)
     public void payNotify(long userOrderId, BigDecimal amount, String tradeNo, int payType) throws ApiServiceException {
-        UserOrder userOrder= payedUserOrder(userOrderId, amount, tradeNo, payType);
-        if(userOrder.getStatus()==0){
-            refundedUserOrderinvalid(userOrder,userOrderId,amount,tradeNo,payType);
+        UserOrder userOrder = payedUserOrder(userOrderId, amount, tradeNo, payType);
+        if (userOrder.getStatus() == 0) {
+            refundedUserOrderinvalid(userOrder, userOrderId, amount, tradeNo, payType);
         }
     }
+
     //status=0,微信支付宝已支付，退款
-    public void refundedUserOrderinvalid(UserOrder userOrder,long userOrderId, BigDecimal amount, String tradeNo, int payType) throws ApiServiceException {
+    public void refundedUserOrderinvalid(UserOrder userOrder, long userOrderId, BigDecimal amount, String tradeNo, int payType) throws ApiServiceException {
         if (amount.compareTo(BigDecimal.ZERO) == 1) {
             /*UserOrder userOrderDB = userOrderDao.getUserOrder(userOrderId);
             if (userOrderDB.getActualAmount().compareTo(amount) != 0) {
@@ -1013,7 +1015,7 @@ public class UserOrderService {
             switch (payType) {
                 case 2://微信退款
                     try {
-                        if (userOrderDao.refundUserOrderinvalid(userOrderId,payType) <= 0) {
+                        if (userOrderDao.refundUserOrderinvalid(userOrderId, payType) <= 0) {
                             throw new ApiServiceException("订单退款失败，请重试");
                         }
                         WechatPay wechatPay = new WechatPay();
@@ -1121,27 +1123,33 @@ public class UserOrderService {
         BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
         long discountId = userOrder.getDiscountId();//优惠券Id
         int payType = userOrder.getPayType();//支付方式
-        List<ProductOff> productOffs=productoffDao.getProductoffBySourceid(userOrderId);
-        if(productOffs==null){
+        List<ProductOff> productOffs = productoffDao.getProductoffBySourceid(userOrderId);
+        if (productOffs == null) {
             return;
         }
-        if(productOffs.size()==0){
+        if (productOffs.size() == 0) {
             unLockProduct(userOrderId, userOrder.getMachineId());
         }
-        if(productOffs.size()>0){
+        if (productOffs.size() > 0) {
             //部分出餐库存变更
             List<UserOrderLine> userOrderLines = userOrderDao.getUserOrderLines(userOrderId);
-            if(productOffs.size()!=userOrderLines.size()){
-                ProductOff pf=null;
-                UserOrderLine uo=null;
-                Iterator<ProductOff> offIterator=productOffs.iterator();
-                while (offIterator.hasNext()){
-                    pf=offIterator.next();
-                    Iterator<UserOrderLine> lineIterator=userOrderLines.iterator();
-                    while (lineIterator.hasNext()){
-                        uo=lineIterator.next();
-                        if(pf.getProductGlobalId()==uo.getProductGlobalId()&&(uo.getQuantity()-uo.getActualQuantity())==0){
-                            lineIterator.remove();
+            if (productOffs.size() != userOrderLines.size()) {
+                for(UserOrderLine userOrderLine:userOrderLines){
+                    userOrderLine.setActualQuantity(0);
+                }
+                ProductOff pf = null;
+                UserOrderLine uo = null;
+                Iterator<ProductOff> offIterator = productOffs.iterator();
+                while (offIterator.hasNext()) {
+                    pf = offIterator.next();
+                    Iterator<UserOrderLine> lineIterator = userOrderLines.iterator();
+                    while (lineIterator.hasNext()) {
+                        uo = lineIterator.next();
+                        if (pf.getProductGlobalId() == uo.getProductGlobalId()) {
+                            uo.setActualQuantity(uo.getActualQuantity()+1);
+                            if (uo.getQuantity() - uo.getActualQuantity() <=0) {
+                                lineIterator.remove();
+                            }
                         }
                     }
                 }
@@ -1157,23 +1165,23 @@ public class UserOrderService {
                         mainCount = mainCount + refund;
                     }
                     if (productDao.unLockProduct(userOrder.getMachineId(), productGlobalId, refund) <= 0) {
-                        logger.error("更新商品库存失败!"+userOrderId+","+productGlobalId);
+                        logger.error("更新商品库存失败!" + userOrderId + "," + productGlobalId);
                         throw new ApiServiceException("更新商品库存失败!");
                     }
                 }
                 if (productDao.unLockMachineProduct(userOrder.getMachineId(), mainCount) <= 0) {
-                    logger.error("更新商品库存失败!"+userOrderId+","+userOrder.getMachineId());
+                    logger.error("更新商品库存失败!" + userOrderId + "," + userOrder.getMachineId());
                     throw new ApiServiceException("更新机器库存失败");
                 }
             }
         }
 
         //企业付款
-        boolean isCompanyPay = userOrder.getCompanyPayAmount().compareTo(BigDecimal.ZERO) == 1;
+        boolean isCompanyPay = companyPayAmount.compareTo(BigDecimal.ZERO) == 1;
         //亲密付
-        boolean isFamilyPay = userOrder.getFamilyPayAmount().compareTo(BigDecimal.ZERO) == 1;
+        boolean isFamilyPay = familyPayAmount.compareTo(BigDecimal.ZERO) == 1;
         //优惠券金额
-        boolean isDiscount = userOrder.getDiscountAmount().compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
+        boolean isDiscount = discountAmount.compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
         if (isCompanyPay) {
             companyRefund(userOrderId, userId, companyPayAmount);
         }
@@ -1219,6 +1227,10 @@ public class UserOrderService {
                 throw new ApiServiceException("订单退款失败，请重试");
             }
         }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userOrderId", userOrderId);
+        jsonObject.put("machineId",userOrder.getMachineId());
+        rabbitMQSender.sendRefundOrder(jsonObject);
     }
 
     //退款通知
@@ -1336,7 +1348,7 @@ public class UserOrderService {
         if (machine == null) {
             throw new ApiServiceException("无法找到该机器");
         }
-        if (machine.getStatus() != 7 && machine.getStatus()!=5) {
+        if (machine.getStatus() != 7 && machine.getStatus() != 5) {
             //机器不在运行中或者调试中
             throw new ApiServiceException("机器没有运行，无法扫码取餐");
         }
@@ -1399,7 +1411,7 @@ public class UserOrderService {
             }
             //获取分享图片
             ImagesShare imagesShare = userOrderDao.getImagesShare();
-            if(null==imagesShare){
+            if (null == imagesShare) {
                 throw new ApiServiceException("分享图片未加载");
             }
             imagesShare.setShareImage(commonFun.sourceImage(imagesShare.getShareImage()));
@@ -1478,20 +1490,20 @@ public class UserOrderService {
         if (status == 2) {
             userOrder.put("invalidTime", DateUtils.getAfterTime(createTime, 3));
         }
-        String amountstr=userOrder.get("amount").toString();
-        BigDecimal amountBD=new BigDecimal(amountstr);
-        amountBD=amountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
-        String amount=amountBD.toString();
-        userOrder.put("amount",amount);
-        String actualAmountstr=userOrder.get("actualAmount").toString();
-        BigDecimal actualAmountBD=new BigDecimal(actualAmountstr);
-        actualAmountBD=actualAmountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
-        String actualAmount=actualAmountBD.toString();
-        userOrder.put("actualAmount",actualAmount);
-        String sp=String.valueOf(userOrder.get("seekPhotos"));
+        String amountstr = userOrder.get("amount").toString();
+        BigDecimal amountBD = new BigDecimal(amountstr);
+        amountBD = amountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
+        String amount = amountBD.toString();
+        userOrder.put("amount", amount);
+        String actualAmountstr = userOrder.get("actualAmount").toString();
+        BigDecimal actualAmountBD = new BigDecimal(actualAmountstr);
+        actualAmountBD = actualAmountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
+        String actualAmount = actualAmountBD.toString();
+        userOrder.put("actualAmount", actualAmount);
+        String sp = String.valueOf(userOrder.get("seekPhotos"));
 
-        if(!StringUtils.isNullOrEmpty(sp)){
-            userOrder.put("seekPhotos",sp);
+        if (!StringUtils.isNullOrEmpty(sp)) {
+            userOrder.put("seekPhotos", sp);
         }
        /* String[] seekPhotos = null;
         if(!StringUtils.isNullOrEmpty(sp)){
@@ -1513,12 +1525,12 @@ public class UserOrderService {
             userOrder.put("seekPhotos",seekPhotos);
         }*/
         data.put("userOrder", userOrder);
-        List<Data> userOrderLines=userOrderDao.getUserOrderLineAndProducts(userOrderId);
-        for (Data userOrderLine:userOrderLines) {
-            String pricestr=userOrderLine.get("price").toString();
-            BigDecimal priceBD=new BigDecimal(pricestr);
-            priceBD=priceBD.setScale(2, BigDecimal.ROUND_HALF_UP);
-            userOrderLine.put("price",priceBD.toString());
+        List<Data> userOrderLines = userOrderDao.getUserOrderLineAndProducts(userOrderId);
+        for (Data userOrderLine : userOrderLines) {
+            String pricestr = userOrderLine.get("price").toString();
+            BigDecimal priceBD = new BigDecimal(pricestr);
+            priceBD = priceBD.setScale(2, BigDecimal.ROUND_HALF_UP);
+            userOrderLine.put("price", priceBD.toString());
         }
         data.put("userOrderLines", userOrderLines);
         return data;
@@ -1575,15 +1587,15 @@ public class UserOrderService {
      * 取餐提醒
      */
     @Transactional(rollbackFor = ApiServiceException.class)
-    public void sendTemplateClaim(Long userOrderId,String openId,String quantity,String machineName,String takeNo,String templateId,String firsMessage)throws ApiServiceException{
+    public void sendTemplateClaim(Long userOrderId, String openId, String quantity, String machineName, String takeNo, String templateId, String firsMessage) throws ApiServiceException {
         // 获取基础支持的access_token
-        String access_token= wechatAuth.getBasicAccessToken();
+        String access_token = wechatAuth.getBasicAccessToken();
        /* BasicAccessToken basicAccessToken= wechatAuth.getBasicAccessToken();
         String basicAccessTokenStr=JsonUtils.GsonString(basicAccessToken);
         Map<String,String> map=JsonUtils.GsonToMaps(basicAccessTokenStr);
         String access_token=map.get("access_token");*/
         // 发送模板消息
-        String resultUrl2 = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+access_token;
+        String resultUrl2 = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + access_token;
         // 封装基础数据
         WechatTemplate wechatTemplate = new WechatTemplate();
         wechatTemplate.setTemplate_id(templateId);
@@ -1621,49 +1633,49 @@ public class UserOrderService {
         mapdata.put("remark", remark);
 
         wechatTemplate.setData(mapdata);
-        String toString=JsonUtils.GsonString(wechatTemplate);
-        String json2 = HttpUtil.post(resultUrl2,toString);
-        TemplateResult templateResult=JsonUtils.GsonToBean(json2, TemplateResult.class );
+        String toString = JsonUtils.GsonString(wechatTemplate);
+        String json2 = HttpUtil.post(resultUrl2, toString);
+        TemplateResult templateResult = JsonUtils.GsonToBean(json2, TemplateResult.class);
         if (null != templateResult) {
             if (0 != templateResult.getErrcode()) {
                 logger.info(String.valueOf(templateResult.getErrcode()));
                 logger.info(templateResult.toString());
 //                logger.info(openId+","+quantity+","+machineName+","+takeNo+","+access_token);
-                throw  new ApiServiceException("消息推送失败"+templateResult.getErrmsg());
+                throw new ApiServiceException("消息推送失败" + templateResult.getErrmsg());
             }
         }
     }
 
     @Transactional(rollbackFor = ApiServiceException.class)
-    public List<Data> getOverdueUserOrder()throws ApiServiceException {
+    public List<Data> getOverdueUserOrder() throws ApiServiceException {
         return userOrderDao.getOverdueUserOrder();
     }
 
     @Transactional(rollbackFor = ApiServiceException.class)
-    public int updateMessageStatus(long userOrderId)throws ApiServiceException {
+    public int updateMessageStatus(long userOrderId) throws ApiServiceException {
         return userOrderDao.updateMessageStatus(userOrderId);
     }
 
     //获取支付来源状态值
-    public Data getMessage(long userOrderId){
-        return  userOrderDao.getMessage(userOrderId);
+    public Data getMessage(long userOrderId) {
+        return userOrderDao.getMessage(userOrderId);
     }
 
     //已取餐
     @Transactional(rollbackFor = ApiServiceException.class)
-    public void sendTemplateTake(Long userOrderId,String openId,String quantity,String machineName,String templateId)throws ApiServiceException{
+    public void sendTemplateTake(Long userOrderId, String openId, String quantity, String machineName, String templateId) throws ApiServiceException {
         // 获取基础支持的access_token
-        String access_token= wechatAuth.getBasicAccessToken();
+        String access_token = wechatAuth.getBasicAccessToken();
 //        BasicAccessToken basicAccessToken= wechatAuth.getBasicAccessToken();
        /* String basicAccessTokenStr=JsonUtils.GsonString(basicAccessToken);
         Map<String,String> map=JsonUtils.GsonToMaps(basicAccessTokenStr);
         String access_token=map.get("access_token");*/
         // 发送模板消息
-        String resultUrl2 = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token="+access_token;
+        String resultUrl2 = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + access_token;
         // 封装基础数据
         WechatTemplate wechatTemplate = new WechatTemplate();
         wechatTemplate.setTemplate_id(templateId);
-        if(StringUtils.isNullOrEmpty(openId)){
+        if (StringUtils.isNullOrEmpty(openId)) {
             return;
         }
         wechatTemplate.setTouser(openId);
@@ -1695,25 +1707,26 @@ public class UserOrderService {
         mapdata.put("remark", remark);
         wechatTemplate.setData(mapdata);
 
-        String toString=JsonUtils.GsonString(wechatTemplate);
-        String json2 = HttpUtil.post(resultUrl2,toString);
-        TemplateResult templateResult=JsonUtils.GsonToBean(json2, TemplateResult.class );
+        String toString = JsonUtils.GsonString(wechatTemplate);
+        String json2 = HttpUtil.post(resultUrl2, toString);
+        TemplateResult templateResult = JsonUtils.GsonToBean(json2, TemplateResult.class);
         if (null != templateResult) {
             if (0 != templateResult.getErrcode()) {
                 logger.info(templateResult.toString());
-                throw  new ApiServiceException("消息推送失败"+templateResult.getErrmsg());
+                throw new ApiServiceException("消息推送失败" + templateResult.getErrmsg());
             }
         }
     }
 
     //获取订单数据
-    public UserOrder findUserOrder(long userOrderId){
-        return  userOrderDao.findUserOrder(userOrderId);
+    public UserOrder findUserOrder(long userOrderId) {
+        return userOrderDao.findUserOrder(userOrderId);
     }
+
     //获取手机号
-    public String getUserMb(long userOrderId){
-        String mb=userOrderDao.getUserMb(userOrderId);
-        if(StringUtils.isNullOrEmpty(mb)){
+    public String getUserMb(long userOrderId) {
+        String mb = userOrderDao.getUserMb(userOrderId);
+        if (StringUtils.isNullOrEmpty(mb)) {
             return "";
         }
         return mb;

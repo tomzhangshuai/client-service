@@ -12,4 +12,14 @@
         um.isRead as isRead,um.isDeleted as isDeleted from messageInfo mi INNER JOIN usermessage um on
         um.messageInfoId=mi.messageInfoId where um.isDeleted=#{isDelete} and um.isRead=#{isRead} and um.userId=#{userId}
     </select>
+
+    <insert id="insertMessageInfo">
+        INSERT INTO messageinfo(messageInfoId,messageType,contentType,content,createTime,isActive)
+        VALUES(#{messageInfoId},#{messageType},#{contentType},#{content},current_timestamp ,#{isActive})
+
+    </insert>
+    <insert id="insertUserMessage">
+        INSERT INTO userMessage(messageInfoId,userId,isRead,isDeleted)
+        VALUES(#{messageInfoId},#{userId},#{isRead},#{isDeleted})
+    </insert>
 </mapper>

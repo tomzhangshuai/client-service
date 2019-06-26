@@ -9,9 +9,11 @@ public class MessageInfo {
     //MessageInfoId,
     private long messageInfoId;
     //消息类型,
-    private MessageInfoType messageType;
+    private int messageType;
+//    private MessageInfoType messageType;
     //消息内容类型,
-    private MessageInfoContentType contentType;
+    private int contentType;
+//    private MessageInfoContentType contentType;
     //消息内容,
     private String content;
     //创建时间,
@@ -27,20 +29,28 @@ public class MessageInfo {
         this.messageInfoId = messageInfoId;
     }
 
-    public MessageInfoType getMessageType() {
-        return this.messageType;
+    public int getMessageType() {
+        return messageType;
     }
 
-    public void setMessageType(MessageInfoType messageType) {
+    public void setMessageType(int messageType) {
         this.messageType = messageType;
     }
 
-    public MessageInfoContentType getContentType() {
-        return this.contentType;
+    public int getContentType() {
+        return contentType;
     }
 
-    public void setContentType(MessageInfoContentType contentType) {
+    public void setContentType(int contentType) {
         this.contentType = contentType;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     public String getContent() {

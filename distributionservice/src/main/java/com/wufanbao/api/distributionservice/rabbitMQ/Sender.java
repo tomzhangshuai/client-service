@@ -44,4 +44,8 @@ public class Sender {
     public void openMachineBehind(Object message) throws IOException, TimeoutException {
         amqpTemplate.convertAndSend("MachineSupplementBehind", "", String.valueOf(message).getBytes());
     }
+    public void updateSupplementStatus(Object message){
+        amqpTemplate.convertAndSend("updateSupplementStatus","",String.valueOf(message).getBytes());
+    }
+
 }

@@ -86,20 +86,22 @@
     <select id="getUserCouponSize" resultType="int">
         select count(1) from usercoupon where status=1 and CURRENT_TIMESTAMP &lt; endTime and userid=#{userId};
     </select>
+    <select id="getInvalidCoupon" resultType="com.wufanbao.api.clientservice.entity.UserCoupon">
+        SELECT * FROM usercoupon WHERE DATE_FORMAT(endtime,'%Y-%m-%d')=DATE_FORMAT(CURDATE(),'%Y-%m-%d')
+    </select>
     <select id="getUserMessgeSize" resultType="int">
-        select count(1) from usermessage where isRead=0 AND userid=#{userId};
+        select count(1) from usermessage where isRead=false AND userid=#{userId};
     </select>
     <insert id="addUserMessage">
         insert into usermessage set(MessageInfoId,userId,isRead,isDeleted) values(#{messageInfoId},#{userId},0,0)
     </insert>
     <select id="getUserMessages" resultType="com.wufanbao.api.clientservice.common.Data">
-        select
-        um.userId,
-        um.isDeleted,
-        um.isRead,
-        um.messageInfoId
-        from usermessage as um join messageInfo as mi on um.messageInfoId=mi.messageInfoId where um.userId=#{userId} and
-        um.isRead=#{isRead} order by createTime desc limit #{pageStart},#{pageSize};
+        SELECT
+            mi.content,
+            mi.createTime
+        FROM messageinfo mi LEFT JOIN usermessage um ON um.messageinfoid=mi.messageinfoid
+        WHERE userId=#{userId}
+        order by createtime desc limit #{pageStart},#{pageSize}
     </select>
     <update id="setUserMessgeRead">
         update usermessage set isRead=1 where isRead=0 AND userId=#{userId}

@@ -71,15 +71,10 @@ public class SupplementOrderService {
     public Object computePreDumping(DistributionOrderLine distributionOrderLine)
     {
         List<DistributionProductLine> distributionProducts=distributionProductLineDao.getOrderProductLines(distributionOrderLine.getDistributionOrderId());
-
         List<Product> machineProducts=productDao.getMachineProductsBySupplementOrderId(distributionOrderLine.getSupplementOrderId());
-
         List<SupplementOrderLineInfo> lines=supplementOrderLineDao.getOrderDetail(distributionOrderLine.getSupplementOrderId());
 
-        //
         boolean isLockQuantity=false;
-
-        //
         int extraQuantity=0;
         int dumpQuantity=0;
         Product machineProduct=null;
@@ -375,7 +370,7 @@ public class SupplementOrderService {
         jsonObject.put("MachineId", machineId);
         jsonObject.put("SupplementOrderId", supplementOrderId);
         sender.supplementCompleted(jsonObject.toJSONString());
-//        redisUtil.del(key);
+        redisUtil.del(key);
     }
 
     /**

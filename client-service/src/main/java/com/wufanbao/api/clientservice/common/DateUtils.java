@@ -184,4 +184,15 @@ public class DateUtils {
         return todayEnd.getTime();
     }
 
+    public static void dateFormate() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar c = Calendar.getInstance();
+        //过去一年
+        c.setTime(new Date());
+        c.add(Calendar.YEAR, -1);
+        Date y = c.getTime();
+        String year = format.format(y);
+        System.out.println("过去一年："+year);
+    }
+
 }

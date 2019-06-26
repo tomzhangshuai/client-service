@@ -96,7 +96,6 @@ public class MessageSendRunner {
             //功能暂时不使用
             //APP内支付
             if (originateid == 1 || originateid == 2 || originateid == 3) {
-
                 Map<String, String> param = new HashMap<>();
                 String mb = String.valueOf(userOrder.get("mb"));
                 if (StringUtils.isNullOrEmpty(mb)) {
@@ -106,6 +105,7 @@ public class MessageSendRunner {
                 String userOrderIdstr = String.valueOf(userOrder.get("userOrderId"));
                 param.put("msg", "订单" + userOrderIdstr + "快过期了，请及时取单");
                 param.put("title", "订单信息提醒");
+                param.put("type","2");
                 param.put("userOrderId", userOrderIdstr);
                 try {
                     userOrderService.updateMessageStatus(Long.parseLong(userOrderIdstr));
@@ -181,7 +181,7 @@ public class MessageSendRunner {
                 }
             }
             //APP内支付 暂时不使用
-           /* if(originateid==1||originateid==2||originateid==3){
+            if(originateid==1||originateid==2||originateid==3){
                 String mb=userOrder.get("mb").toString();
                 if(StringUtils.isNullOrEmpty(mb)){
                     continue;
@@ -190,6 +190,7 @@ public class MessageSendRunner {
                 param.put("id",mb);
                 param.put("msg","客官，餐食已在取餐口，请及时取餐！");
                 param.put("title","取餐提醒");
+                param.put("type","2");
                 param.put("userOrderId",userOrderId.toString());
                 try {
                     productoffService.updateMessageStatus(userOrderId);
@@ -199,7 +200,7 @@ public class MessageSendRunner {
                     logger.error(commonFun.getStackTraceInfo(ex));
                     continue;
                 }
-            }*/
+            }
         }
     }
 }

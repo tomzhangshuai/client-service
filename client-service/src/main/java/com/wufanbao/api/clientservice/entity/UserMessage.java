@@ -16,7 +16,7 @@ public class UserMessage {
     private boolean isDeleted;
 
     public long getMessageInfoId() {
-        return this.messageInfoId;
+        return messageInfoId;
     }
 
     public void setMessageInfoId(long messageInfoId) {
@@ -24,27 +24,26 @@ public class UserMessage {
     }
 
     public long getUserId() {
-        return this.userId;
+        return userId;
     }
 
     public void setUserId(long userId) {
         this.userId = userId;
     }
 
-    public boolean getIsRead() {
-        return this.isRead;
+    public boolean isRead() {
+        return isRead;
     }
 
-    public void setIsRead(boolean isRead) {
-        this.isRead = isRead;
+    public void setRead(boolean read) {
+        isRead = read;
     }
 
-    public boolean getIsDeleted() {
-        return this.isDeleted;
+    public boolean isDeleted() {
+        return isDeleted;
     }
 
-    public void setIsDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
-
 }

@@ -27,15 +27,22 @@
         select contentUrl,appDiscoverId,isActive,shareTitle,imageUrl,shareImageUrl,shareSubtitle from appDiscover where
         appDiscoverId=#{appDiscoverId}
     </select>
+
     <select id="getVersionControl" resultType="com.wufanbao.api.clientservice.entity.VersionControl">
         SELECT
 	    versionCode,
 	    versionName,
+	    versionType,
 	    content,
 	    downloadLink,
 	    createtime,
 	    effectiveTime,
-	    forceLevel
-        FROM versioncontrol
+	    forceLevel,
+	    appType
+        FROM versioncontrol WHERE versionType=#{versionType} AND appType=1 ORDER BY versionCode DESC limit 1
     </select>
+    <select id="getVersionLevel" resultType="String">
+        select forceLevel from versioncontrol where versionType=#{versionType} AND appType=1 and versionCode=#{versionCode}
+    </select>
+
 </mapper>

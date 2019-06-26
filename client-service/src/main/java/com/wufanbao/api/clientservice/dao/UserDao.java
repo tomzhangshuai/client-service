@@ -533,6 +533,11 @@ public interface UserDao {
     UserCoupon getInvalidUserCoupon();
 
     /**
+     * 获取当天失效的优惠券
+     * @return
+     */
+    List<UserCoupon> getInvalidCoupon();
+    /**
      * 失效优惠券
      * @param couponId
      * @return

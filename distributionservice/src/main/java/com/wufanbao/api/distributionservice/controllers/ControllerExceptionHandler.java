@@ -14,7 +14,7 @@ public class ControllerExceptionHandler {
 
 
     @Autowired
-   Setting setting;
+    Setting setting;
 
     /**
      *  拦截Exception类的异常
@@ -32,7 +32,7 @@ public class ControllerExceptionHandler {
             result.signResult(setting.getSecurityKey());
             return result;
         }
-         result = new ResponseInfo(Code.unknownError);
+        result = new ResponseInfo(Code.unknownError);
         result.signResult(setting.getSecurityKey());
         return result;
     }

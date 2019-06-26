@@ -5,7 +5,9 @@
 //import com.wufanbao.api.clientservice.common.DateUtils;
 //import com.wufanbao.api.clientservice.common.JsonUtils;
 //import com.wufanbao.api.clientservice.common.RequestData;
+//import com.wufanbao.api.clientservice.common.rabbitMQ.RabbitMQSender;
 //import com.wufanbao.api.clientservice.entity.User;
+//import org.json.JSONObject;
 //import org.junit.Test;
 //import org.junit.runner.RunWith;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -56,16 +58,17 @@
 //        }.getType());
 //        String a=map.get("nonce_str");
 //    }
-//
+//    @Autowired
+//    private RabbitMQSender rabbitMQSender;
 //    @Test
 //    public void TestDateUtils(){
-//        try {
-//            Date date1= DateUtils.StringToDate("2004-03-26 13:31:40");
-//            Date date2= DateUtils.StringToDate("2004-03-27 13:33:40");
-//            System.out.println(DateUtils.getDiffMinutes(date1,date2));
-//        } catch (ParseException e) {
-//            e.printStackTrace();
-//        }
+//
+//        String userOrderId="26028476760065";
+//        String machineId="2079466356737";
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("userOrderId", userOrderId);
+//        jsonObject.put("machineId",machineId);
+//        rabbitMQSender.sendRefundOrder(jsonObject);
 //
 //    }
 //}

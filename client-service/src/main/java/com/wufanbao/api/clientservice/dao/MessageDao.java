@@ -1,6 +1,7 @@
 package com.wufanbao.api.clientservice.dao;
 
 import com.wufanbao.api.clientservice.entity.MessageInfo;
+import com.wufanbao.api.clientservice.entity.UserMessage;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,16 @@ public interface MessageDao {
      * @return
      */
     List<MessageInfo> getMessages(@Param("userId") long userId, @Param("isRead") boolean isRead, @Param("isDelete") boolean isDelete);
-
-
+    /**
+     * 插入即将过期优惠券消息
+     * @param messageInfo
+     * @return
+     */
+    int insertMessageInfo(MessageInfo messageInfo);
+    /**
+     * 插入用户消息
+     * @param userMessage
+     * @return
+     */
+    int  insertUserMessage(UserMessage userMessage);
 }

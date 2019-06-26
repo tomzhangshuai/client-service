@@ -1,7 +1,9 @@
 package com.wufanbao.api.distributionservice.interceptors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.Feature;
 import com.wufanbao.api.distributionservice.config.Code;
 import com.wufanbao.api.distributionservice.config.ProfileConfig;
 import com.wufanbao.api.distributionservice.config.Setting;
@@ -40,7 +42,8 @@ public class TransferInterceptor implements HandlerInterceptor {
             //无法获取到数据
             return false;
         }
-        RequestInfo p = JSON.parseObject(jsonString, new TypeReference<RequestInfo>() {});
+//        JSONObject retObj = new JSONObject(true);
+        RequestInfo p = JSON.parseObject(jsonString, new TypeReference<RequestInfo>() {},Feature.OrderedField);
         if (p == null) {
             SetError(response, Code.parameterError.getCode(), "无法序列化");
             //无法序列化

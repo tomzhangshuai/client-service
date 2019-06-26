@@ -36,5 +36,13 @@ public interface AppAdDao {
      * 获取版本控制信息
      * @return
      */
-    List<VersionControl> getVersionControl();
+    VersionControl  getVersionControl(@Param("versionType") int versionType);
+
+    /**
+     * 版本升级
+     * @param versionCode
+     * @return
+     */
+    String getVersionLevel(@Param("versionCode") String versionCode,@Param("versionType") int versionType);
+
 }

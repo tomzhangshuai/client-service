@@ -18,7 +18,7 @@ public class ProductPrepare {
     private Date expirationTime;
     //加热完成时间,
     private Date heatedTime;
-    //保温仓出仓,
+    //保温仓出仓时间,
     private Date prepareOut;
     //冷冻仓位置(仅记录),
     private int freezerOutPotion;

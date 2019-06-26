@@ -34,4 +34,12 @@ public class RabbitMQSender {
     public void userpayUnbindSend(Object message){
         amqpTemplate.convertAndSend("userpayUnBind","",String.valueOf(message).getBytes());
     }
+    //解除服务端
+    public void sendRefundOrder(Object message){
+        amqpTemplate.convertAndSend("sendRefundOrder","",String.valueOf(message).getBytes());
+    }
+    //失效优惠券
+    public void sendInvalidCoupon(Object message){
+        amqpTemplate.convertAndSend("UserCouponEx6","",String.valueOf(message).getBytes());
+    }
 }

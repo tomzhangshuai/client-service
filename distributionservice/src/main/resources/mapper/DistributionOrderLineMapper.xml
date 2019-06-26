@@ -5,7 +5,7 @@
 
     <!--查询配送单正在配送中的补货单-->
     <select id="getDistributingSupplementOrder" resultType="com.wufanbao.api.distributionservice.entities.SupplementOrder">
-        select l.SupplementOrderId,s.SupplementStatus from distributionorderline l left join supplementorder s on
+        select l.SupplementOrderId,s.SupplementStatus,machineId from distributionorderline l left join supplementorder s on
         l.SupplementOrderId=s.SupplementOrderId where l.DistributionOrderId=#{distributionOrderId} and
         s.SupplementStatus&gt; 4 and s.SupplementStatus&lt;10
     </select>

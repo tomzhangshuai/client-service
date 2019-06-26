@@ -41,17 +41,17 @@ public class IndexController extends BaseController {
         logger.error(dateFormat.format(new Date()));
         return dateFormat.format(new Date());
     }
-
     @PostMapping("versionControl")
     public ResponseData getVersionControl(String data){
         Map<String, String> map = JsonUtils.GsonToMaps(data);
-        String version=map.get("version");
         String versionCode=map.get("versionCode");
-        if(StringUtils.isNullOrEmpty(versionCode)){
+        String versionTypestr=map.get("versionType");
+        int versionType=Integer.parseInt(versionTypestr);
+        if(StringUtils.isNullOrEmpty(versionCode)||StringUtils.isNullOrEmpty(versionTypestr)){
             responseData.error("获取当前版本信息失败，请稍后重试").sign(null);
         }
         try {
-            Data result = appADService.getVersionControl(versionCode);
+            Data result = appADService.getVersionControl(versionCode,versionType);
             return responseData.success().sign(result);
         } catch (ApiServiceException e) {
             return responseData.error(e).sign(null);

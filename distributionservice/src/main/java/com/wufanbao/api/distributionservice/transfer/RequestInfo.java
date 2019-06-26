@@ -10,10 +10,6 @@ import java.util.Date;
  * 请求数据包
  */
 public class RequestInfo {
-    /**
-     * 数据内容
-     */
-    private String data;
 
     /**
      * 签名摘要
@@ -35,6 +31,10 @@ public class RequestInfo {
      */
     private String version;
 
+    /**
+     * 数据内容
+     */
+    private String data;
     public String getDigital() {
         return digital;
     }
@@ -123,33 +123,21 @@ public class RequestInfo {
      * @param args
      */
     public static void main(String[] args) {
+        /*String content = "92cd57d4906e1cfeb2638510c8fa4a3b"+"{\"Mb\":\"13588224138\",\"passWord\":\"e10adc3949ba59abbe56e057f20f883e\"}"
+                + "2019-06-18 10:45:09" + "02c646a93dfab08c8798815773cb1a29";
+        String digital = Md5.digital(content).toLowerCase();
+        String requet1="request={\"digital\":\"fc00d80a2629b6f9711f27b68c832009\",\"requestTime\":\"2019-06-18 10:45:09\",\"data\":{\"Mb\":\"13588224138\",\"passWord\":\"e10adc3949ba59abbe56e057f20f883e\"},\"requestId\":\"92cd57d4906e1cfeb2638510c8fa4a3b\",\"version\":\"1.0\"}";
+        System.out.println(digital);
 
-        Date now=new Date();
-        long time=now.getTime();
-        System.out.println("time;"+time+"time2:"+System.currentTimeMillis());
-        time=time-(time%(24*60*60*1000));
-        System.out.println(time);
-        Date day=new Date(time);
-        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println(format.format(now));
-        System.out.println(format.format(day));
-        String pp=Md5.digital("123456");
-        RequestInfo info=new RequestInfo();
-        //info.setData("{\"employeeId\":\"222\"}");
+        String content2 = "92cd57d4906e1cfeb2638510c8fa4a3b{\"versionCode\":\"2.1.1\",\"versionType\":\"1\"}2019-06-18 10:45:0902c646a93dfab08c8798815773cb1a29";
+        String digital2 = Md5.digital(content2).toLowerCase();
+        String requet2="{\"digital\":\"0dfa922dd312a4bfc81432c0350427aa\",\"requestTime\":\"2019-06-18 10:45:09\",\"requestId\":\"92cd57d4906e1cfeb2638510c8fa4a3b\",\"version\":\"1.0\",\"data\":{\"versionCode\":\"2.1.1\",\"versionType\":\"1\"}}";
+        System.out.println(digital2);*/
 
-        /*
-        info.setData("{\"mb\":\"13500007634\",\"password\":\"E10ADC3949BA59ABBE56E057F20F883E\"}");
-        info.setTime();
-        info.setRequestId("5EEC5DEE-637D-43C2-ACDC-D53E23515EDA");
-        info.setVersion("1.0");
-        info.setDigital(info.signResult("02c646a93dfab08c8798815773cb1a29"));
-        */
-       /// info.setData("{\n  \"mb\" : \"13500007634\",\n  \"password\" : \"e10adc3949ba59abbe56e057f20f883e\"\n}");
+        String content3="92cd57d4906e1cfeb2638510c8fa4a3b{\"distributionOrderId\":2138919534593,\"remark\":\"没有什么可以阻挡我对自由的向往\"}2019-06-18 10:45:0902c646a93dfab08c8798815773cb1a29";
+        String digital3 = Md5.digital(content3).toLowerCase();
+        System.out.println(digital3);
+        String requet3="{\"digital\":\"527682f295ab3e68d8b84b9658e272c9\"\"requestTime\":\"2019-06-18 10:45:09\",\"requestId\":\"92cd57d4906e1cfeb2638510c8fa4a3b\",\"version\":\"1.0\",\"data\":{\"distributionOrderId\":2138919534593,\"remark\":\"没有什么可以阻挡我对自由的向往\"}}";
 
-        String ss=com.alibaba.fastjson.JSON.toJSONString(info);
-        System.out.println(ss);
-        pp= CommonFun.encryptionPassword(pp);
-        System.out.println(pp);
     }
-
 }

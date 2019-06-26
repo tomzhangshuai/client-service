@@ -34,28 +34,22 @@ public class UserOrderRunner extends Thread {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    //失效订单,退款
+    //失效订单,退款(90分钟)
     @Scheduled(cron = "0/5 * * * * ? ")
     public void InvodeOrder() throws Exception {
         long userOrderId = 0;
-        String key = "Runner_InvodeOrder";
-        String userOrderIdStr = redisUtils.get(key);
-        if (!StringUtils.isNullOrEmpty(userOrderIdStr)) {
-            userOrderId = Long.parseLong(userOrderIdStr);
-        }
         List<UserOrder> userOrders = userOrderService.getInvalidUserOrder(userOrderId);
+        if(userOrders.size()==0){
+            return;
+        }
         for (UserOrder userOrder:userOrders){
             if (userOrder == null || userOrder.getUserOrderId() <= 0) {
                 continue;
             }
             try {
-                redisUtils.set(key, String.valueOf(userOrder.getUserOrderId()));
-                redisUtils.expire(key, 180);
                 userOrderService.refundUserOrder(userOrder.getUserOrderId());
-                redisUtils.del(key);
             } catch (Exception ex) {
                 logger.error(commonFun.getStackTraceInfo(ex));
-                redisUtils.del(key);
                 continue;
             }
         }
@@ -64,29 +58,32 @@ public class UserOrderRunner extends Thread {
     @Scheduled(cron = "0/5 * * * * ? ")
     public void CancleOrder() throws Exception {
         String key = "Runner_CancleOrder";
-            long userOrderId = 0;
-            String userOrderIdStr = redisUtils.get(key);
-            if (!StringUtils.isNullOrEmpty(userOrderIdStr)) {
-                userOrderId = Long.parseLong(userOrderIdStr);
+        long userOrderId = 0;
+        String userOrderIdStr = redisUtils.get(key);
+        if (!StringUtils.isNullOrEmpty(userOrderIdStr)) {
+            userOrderId = Long.parseLong(userOrderIdStr);
+        }
+        //获取待支付订单status=2
+        List<UserOrder> userOrders = userOrderService.getToPayUserOrder(userOrderId);
+        if(userOrders.size()==0){
+            return;
+        }
+        for (UserOrder userOrder : userOrders){
+            if (userOrder == null) {
+                continue;
             }
-            //获取待支付订单status=2
-            List<UserOrder> userOrders = userOrderService.getToPayUserOrder(userOrderId);
-            for (UserOrder userOrder : userOrders){
-                if (userOrder == null) {
-                    continue;
-                }
-                if (DateUtils.getDiffMinutes(new Date(), userOrder.getCreateTime()) < 3) {
-                    continue;
-                }
-                //如果微信或者支付宝支付
-                if (userOrder.getPayType() == 2 || userOrder.getPayType() == 3) {
-                    //查询订单的支付状态,返回status=3的订单；若等0 返回订单；
-                    userOrder = userOrderService.payQuery(userOrder.getUserOrderId(), userOrder.getPayType());
-                }
-                if (userOrder.getStatus() >= 3) {
-                    continue;
-                }
-                try {
+            if (DateUtils.getDiffMinutes(new Date(), userOrder.getCreateTime()) < 3) {
+                continue;
+            }
+            //如果微信或者支付宝支付
+            if (userOrder.getPayType() == 2 || userOrder.getPayType() == 3) {
+                //查询订单的支付状态,返回status=3的订单；若等0 返回订单；
+                userOrder = userOrderService.payQuery(userOrder.getUserOrderId(), userOrder.getPayType());
+            }
+            if (userOrder.getStatus() >= 3) {
+                continue;
+            }
+            try {
                 redisUtils.set(key, String.valueOf(userOrder.getUserOrderId()));
                 redisUtils.expire(key, 180);
                 userOrderService.cancleUserOrder(userOrder.getUserOrderId());
@@ -102,13 +99,11 @@ public class UserOrderRunner extends Thread {
     //超过一天餐食制作中的自动退款
     @Scheduled(cron = "0/5 * * * * ? ")
     public void RefundOrder() throws Exception{
-        String key = "Runner_AutoRefundUserOrder";
         long userOrderId = 0;
-        String userOrderIdStr = redisUtils.get(key);
-        if (!StringUtils.isNullOrEmpty(userOrderIdStr)) {
-            userOrderId = Long.parseLong(userOrderIdStr);
-        }
         List<UserOrder> userOrders = userOrderService.getMakingUserOrder(userOrderId);
+        if(userOrders.size()==0){
+            return;
+        }
         for (UserOrder userOrder : userOrders) {
             if (userOrder == null || userOrder.getUserOrderId() <= 0) {
                 continue;
@@ -122,13 +117,9 @@ public class UserOrderRunner extends Thread {
                 continue;
             }
             try {
-                redisUtils.set(key, String.valueOf(userOrder.getUserOrderId()));
-                redisUtils.expire(key, 180);
                 userOrderService.refundUserOrder(userOrder.getUserOrderId());
-                redisUtils.del(key);
             } catch(Exception ex){
                 logger.error(commonFun.getStackTraceInfo(ex));
-                redisUtils.del(key);
                 continue;
             }
         }

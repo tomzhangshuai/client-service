@@ -1,6 +1,7 @@
 package com.wufanbao.api.clientservice.common.rabbitMQ;
 
 import com.wufanbao.api.clientservice.common.*;
+import com.wufanbao.api.clientservice.dao.MessageDao;
 import com.wufanbao.api.clientservice.entity.Machine;
 import com.wufanbao.api.clientservice.entity.UserOrder;
 import com.wufanbao.api.clientservice.entity.UserOrderLine;
@@ -34,6 +35,8 @@ public class RabbitMQReceiver {
     private UserService userService;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    protected ResponseData responseData;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String templateIdTake = "PSGgOqrlQCbI70c33qP48A-UTUGLMrL_4hTj7cdNTn0";
@@ -76,7 +79,7 @@ public class RabbitMQReceiver {
             }
         }
         //APP内支付  暂时不用
-        /*if (originateid == 1 || originateid == 2 || originateid == 3) {
+        if (originateid == 1 || originateid == 2 || originateid == 3) {
             Map<String, String> param = new HashMap<>();
            String mb=userOrderService.getUserMb(userOrderId);
             param.put("id", mb);
@@ -91,7 +94,7 @@ public class RabbitMQReceiver {
              logger.info("订单信息提醒推送失败，订单" + userOrderIdstr);
              logger.error(commonFun.getStackTraceInfo(ex));
             }
-        }*/
+        }
     }
 
     @RabbitListener(queues = "#{userpayBindQueue.name}")
@@ -105,7 +108,7 @@ public class RabbitMQReceiver {
             param.put("id",mb);
             param.put("msg","饭票有了，任意吃");
             param.put("title","开通亲密付");
-            param.put("type","2");
+            param.put("type","3");
             param.put("userId",userId);
             messageService.jpushAll(param);
             logger.info("亲密付消息推送成功"+mb);
@@ -126,80 +129,31 @@ public class RabbitMQReceiver {
             param.put("id",mb);
             param.put("msg","伤害了一个爱你的人");
             param.put("title","解除亲密付");
-            param.put("type","3");
+            param.put("type","0");
             param.put("userId",userId);
             messageService.jpushAll(param);
             logger.info("亲密付消息推送成功"+mb);
         } catch (Exception e) {
             logger.info("亲密付绑定推送异常！");
-            logger.error(commonFun.getStackTraceInfo(e));
         }
     }
 
     //优惠券
     @RabbitListener(queues = "#{userCouponEx6Queue.name}")
-    public void UserCouponEx6(byte[] body) throws UnsupportedEncodingException {
-        /*try {
+    public void UserCouponEx6(byte[] body) {
+        try {
             String message = new String(body, "UTF-8");
             JSONObject jsonObject = new JSONObject(message);
-            String userId = jsonObject.getString("userId");
-            String nums = jsonObject.getString("nums");
-//            String registrationId = redisUtils.get(userId + ",1");
-//            String notification_title = "难过，您有" + nums + "张优惠卷还有6个小时就过期了，请及时使用";
-//            String extrasparam = "1";
-//            int jj = JpushClientUtil.sendToRegistrationId(registrationId, notification_title, extrasparam);
-//            System.out.println(jj + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            String userId = String.valueOf(jsonObject.get("userId"));
+//            String couponDefinitionId = String.valueOf(jsonObject.getString("couponDefinitionId"));
+            String couponName = String.valueOf(jsonObject.getString("couponName"));
+            messageService.insertMessage(userId,couponName);
         } catch (Exception ex) {
-            ex.printStackTrace();
-        }*/
-
-        /*ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(host);
-        factory.setUsername(username);
-        factory.setPassword(password);
-        factory.setPort(5672);
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        channel.exchangeDeclare(coupons, "fanout");
-        //产生一个随机的队列名称
-        String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, coupons, "");//对队列进行绑定
-        System.out.println("优惠券过期");
-        Consumer consumer = new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String message = new String(body, "UTF-8");
-                Jedis jedis = new Jedis(getHost,6379);
-                jedis.auth(getpassword);
-                JSONObject jsonObject = new JSONObject(message);
-                String userId = jsonObject.getString("userId");
-                String nums = jsonObject.getString("nums");
-                String registrationId = jedis.get(userId + ",1");
-                String notification_title = "难过，您有" + nums + "张优惠卷还有6个小时就过期了，请及时使用";
-                String extrasparam = "1";
-                int jj = JpushClientUtil.sendToRegistrationId(registrationId, notification_title, extrasparam);
-                System.out.println(jj + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                jedis.close();
-            }
-        };
-        channel.basicConsume(queueName, true, consumer);//队列会自动删除*/
-
-
-//        String message = new String(body, "UTF-8");
-//        Jedis jedis = new Jedis(getHost,6379);
-//        jedis.auth(getpassword);
-//        JSONObject jsonObject = new JSONObject(message);
-//        String userId = jsonObject.getString("userId");
-//        String nums = jsonObject.getString("nums");
-//        String registrationId = jedis.get(userId + ",1");
-//        String notification_title = "难过，您有" + nums + "张优惠卷还有6个小时就过期了，请及时使用";
-//        String extrasparam = "1";
-//        int jj = JpushClientUtil.sendToRegistrationId(registrationId, notification_title, extrasparam);
-//        System.out.println(jj + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-//        jedis.close();
+            logger.error(commonFun.getStackTraceInfo(ex));
+        }
 
     }
-//
+
 //    //餐食过期
 //    @RabbitListener(queues = "#{userOrderEx6Queue.name}")
 //    public void UserOrderEx6(byte[] body) {
