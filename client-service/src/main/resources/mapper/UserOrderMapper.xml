@@ -423,5 +423,8 @@
     <select id="getUserMb" resultType="String">
         SELECT u.mb FROM USER AS u LEFT JOIN userorder AS us ON u.userid=us.userid WHERE us.userorderid=#{userOrderId}
     </select>
-
+    <update id="updateOffQuantity">
+        UPDATE userorderline SET offQuantity=offQuantity+1
+        WHERE userorderId=#{userorderId} AND productGlobalId=#{productGlobalId}
+    </update>
 </mapper>

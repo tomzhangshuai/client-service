@@ -136,7 +136,7 @@ public class UserOrderController extends BaseController {
             }
             double amount = Double.valueOf(amountStr);
             Object result = userOrderService.appPayUserOrder(userId, userOrderId, payType, payPassword, BigDecimal.valueOf(amount / 100), ip);
-          return responseData.success().sign(result);
+            return responseData.success().sign(result);
         } catch (ApiServiceException e) {
             return responseData.error(e).sign(null);
         } catch (Exception e) {
@@ -283,27 +283,28 @@ public class UserOrderController extends BaseController {
         } catch (Exception ex) {
             logger.error(commonFun.getStackTraceInfo(ex));
         }
-
         if (requltMap.containsKey("return_code") && requltMap.get("return_code").toString().equalsIgnoreCase("SUCCESS")) {
             try {
                 String reqInfo = requltMap.get("req_info").toString();
                 WechatPay wechatPay = new WechatPay();
                 Map<String, String> map = wechatPay.decodeData(reqInfo);
-
                 long userOrderId = Long.parseLong(map.get("out_trade_no"));
                 long totalFee = Long.parseLong(map.get("total_fee"));
                 String transaction_id = map.get("transaction_id");//微信支付订单号
+                String refundStatus=map.get("refund_status");
                 long out_refund_no = Long.parseLong(map.get("out_refund_no"));//商户退款单号
                 BigDecimal amount = BigDecimal.valueOf(totalFee).divide(BigDecimal.valueOf(100));
-                userOrderService.refundNotify(userOrderId, out_refund_no, amount, transaction_id, 2);
-                PrintWriter writer = null;
-                try {
-                    writer = response.getWriter();
-                    writer.write(wechatPay.notifySuccess("SUCCESS", "OK")); //告诉微信服务器，我收到信息了，不要在调用回调action了
-                    writer.flush();
-                } finally {
-                    if (writer != null) {
-                        writer.close();
+                if("SUCCESS".equals(refundStatus)){
+                    userOrderService.refundNotify(userOrderId, out_refund_no, amount, transaction_id, 2);
+                    PrintWriter writer = null;
+                    try {
+                        writer = response.getWriter();
+                        writer.write(wechatPay.notifySuccess("SUCCESS", "OK")); //告诉微信服务器，我收到信息了，不要在调用回调action了
+                        writer.flush();
+                    } finally {
+                        if (writer != null) {
+                            writer.close();
+                        }
                     }
                 }
             } catch (Exception ex) {

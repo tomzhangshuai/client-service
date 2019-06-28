@@ -111,7 +111,7 @@ public class UserOrderService {
             logger.error("更新商品库存失败!" + userOrderId + "," + machineId);
             throw new ApiServiceException("更新机器库存失败" + userOrderId + "," + machineId);
         }
-        /*try {
+        try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("orderId", userOrderId);
             jsonObject.put("machineId", machineId);
@@ -120,7 +120,7 @@ public class UserOrderService {
             throw new ApiServiceException("解锁库存失败，请重试");
         } catch (IOException e) {
             throw new ApiServiceException("解锁库存失败，请重试");
-        }*/
+        }
     }
 
     //获取用户可以优惠券
@@ -1103,10 +1103,10 @@ public class UserOrderService {
     //退款
     @Transactional(rollbackFor = ApiServiceException.class)
     public void refundUserOrder(long userOrderId) throws ApiServiceException {
-        refund(userOrderId);
+   /*     refund(userOrderId);
     }
 
-    private void refund(long userOrderId) throws ApiServiceException {
+    private void refund(long userOrderId) throws ApiServiceException {*/
         UserOrder userOrder = userOrderDao.getUserOrder(userOrderId);
         if (userOrder.getStatus() > 4) {
             throw new ApiServiceException("订单已生效，无法退款");
@@ -1114,59 +1114,47 @@ public class UserOrderService {
         if (userOrder.getStatus() < 3) {
             throw new ApiServiceException("订单未支付，无法退款");
         }
-        BigDecimal amount = userOrder.getAmount();//订单金额
+       /* BigDecimal amount = userOrder.getAmount();//订单金额
         long userId = userOrder.getUserId();
         BigDecimal actualAmount = userOrder.getActualAmount();//订单实际支付金额
         BigDecimal receiveAmount = userOrder.getReceiveAmount();//订单实际支付金额
-        BigDecimal companyPayAmount = userOrder.getCompanyPayAmount();//企业付金额
-        BigDecimal familyPayAmount = userOrder.getFamilyPayAmount();//亲密付金额
-        BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
         long discountId = userOrder.getDiscountId();//优惠券Id
-        int payType = userOrder.getPayType();//支付方式
+        int payType = userOrder.getPayType();//支付方式*/
         List<ProductOff> productOffs = productoffDao.getProductoffBySourceid(userOrderId);
         if (productOffs == null) {
             return;
         }
         if (productOffs.size() == 0) {
             unLockProduct(userOrderId, userOrder.getMachineId());
-        }
-        if (productOffs.size() > 0) {
+            refundMoney(userOrderId, userOrder);
+        } else {
+            int sum = 0;
             //部分出餐库存变更
             List<UserOrderLine> userOrderLines = userOrderDao.getUserOrderLines(userOrderId);
-            if (productOffs.size() != userOrderLines.size()) {
-                for(UserOrderLine userOrderLine:userOrderLines){
-                    userOrderLine.setActualQuantity(0);
-                }
-                ProductOff pf = null;
-                UserOrderLine uo = null;
-                Iterator<ProductOff> offIterator = productOffs.iterator();
-                while (offIterator.hasNext()) {
-                    pf = offIterator.next();
-                    Iterator<UserOrderLine> lineIterator = userOrderLines.iterator();
-                    while (lineIterator.hasNext()) {
-                        uo = lineIterator.next();
-                        if (pf.getProductGlobalId() == uo.getProductGlobalId()) {
-                            uo.setActualQuantity(uo.getActualQuantity()+1);
-                            if (uo.getQuantity() - uo.getActualQuantity() <=0) {
-                                lineIterator.remove();
-                            }
-                        }
-                    }
-                }
-                //改库存
+            for (UserOrderLine userOrderLine : userOrderLines) {
+                sum += userOrderLine.getQuantity();
+            }
+            if (productOffs.size() != sum) {
                 int mainCount = 0;
                 for (UserOrderLine userOrderLine : userOrderLines) {
-                    int quantity = userOrderLine.getQuantity();
-                    int actualQuantity = userOrderLine.getActualQuantity();
-                    int refund = quantity - actualQuantity;
-                    long productGlobalId = userOrderLine.getProductGlobalId();
-                    boolean isAttr = productGlobalId >= 28 && productGlobalId < 32;//是否是主食
-                    if (!isAttr) {
-                        mainCount = mainCount + refund;
+                    UserOrderLine ul = new UserOrderLine();
+                    ul.setProductGlobalId(userOrderLine.getProductGlobalId());
+                    ul.setQuantity(userOrderLine.getQuantity());
+                    ul.setActualQuantity(0);
+                    for (ProductOff productOff : productOffs) {
+                        if (productOff.getProductGlobalId() == userOrderLine.getProductGlobalId()) {
+                            ul.setActualQuantity(ul.getActualQuantity() + 1);
+                        }
                     }
+                    int refund = ul.getQuantity() - ul.getActualQuantity();
+                    long productGlobalId = userOrderLine.getProductGlobalId();
                     if (productDao.unLockProduct(userOrder.getMachineId(), productGlobalId, refund) <= 0) {
                         logger.error("更新商品库存失败!" + userOrderId + "," + productGlobalId);
                         throw new ApiServiceException("更新商品库存失败!");
+                    }
+                    boolean isAttr = productGlobalId >= 28 && productGlobalId < 32;//是否是主食
+                    if (!isAttr) {
+                        mainCount = mainCount + refund;
                     }
                 }
                 if (productDao.unLockMachineProduct(userOrder.getMachineId(), mainCount) <= 0) {
@@ -1174,8 +1162,20 @@ public class UserOrderService {
                     throw new ApiServiceException("更新机器库存失败");
                 }
             }
+            refundMoney(userOrderId, userOrder);
         }
+    }
 
+    public void refundMoney(long userOrderId, UserOrder userOrder) throws ApiServiceException {
+        BigDecimal amount = userOrder.getAmount();//订单金额
+        long userId = userOrder.getUserId();
+        BigDecimal actualAmount = userOrder.getActualAmount();//订单实际支付金额
+        BigDecimal receiveAmount = userOrder.getReceiveAmount();//订单实际支付金额
+        long discountId = userOrder.getDiscountId();//优惠券Id
+        int payType = userOrder.getPayType();//支付方式
+        BigDecimal companyPayAmount = userOrder.getCompanyPayAmount();//企业付金额
+        BigDecimal familyPayAmount = userOrder.getFamilyPayAmount();//亲密付金额
+        BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
         //企业付款
         boolean isCompanyPay = companyPayAmount.compareTo(BigDecimal.ZERO) == 1;
         //亲密付
@@ -1229,7 +1229,7 @@ public class UserOrderService {
         }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("userOrderId", userOrderId);
-        jsonObject.put("machineId",userOrder.getMachineId());
+        jsonObject.put("machineId", userOrder.getMachineId());
         rabbitMQSender.sendRefundOrder(jsonObject);
     }
 

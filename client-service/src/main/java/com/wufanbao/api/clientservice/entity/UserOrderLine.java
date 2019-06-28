@@ -14,6 +14,8 @@ public class UserOrderLine {
     private int quantity;
     //取餐数量,
     private int actualQuantity;
+    //下架数量
+    private int offQuantity;
     //单价,
     private BigDecimal price;
     //备注,
@@ -22,6 +24,14 @@ public class UserOrderLine {
     private int tastyDegree;
     //评价,
     private String evaluation;
+
+    public int getOffQuantity() {
+        return offQuantity;
+    }
+
+    public void setOffQuantity(int offQuantity) {
+        this.offQuantity = offQuantity;
+    }
 
     public long getUserOrderId() {
         return this.userOrderId;

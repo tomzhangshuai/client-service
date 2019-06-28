@@ -86,6 +86,7 @@ public class RabbitMQReceiver {
             String userOrderIdstr = String.valueOf(userOrderId);
             param.put("msg", "订单" + userOrderIdstr + "已成功取餐");
             param.put("title", "订单完成提醒");
+            param.put("type","2");
             param.put("userOrderId", userOrderIdstr);
             try {
                 messageService.jpushAll(param);

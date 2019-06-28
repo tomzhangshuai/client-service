@@ -16,6 +16,11 @@ public interface UserOrderDao {
     int insertUserOrder(UserOrder userOrder);
 
     /**
+     * 更新offquantity
+     * @return
+     */
+    int updateOffQuantity(@Param("userorderId") long userorderId,@Param("productGlobalId") long productGlobalId);
+    /**
      * 取消订单
      *
      * @param userOrderId
