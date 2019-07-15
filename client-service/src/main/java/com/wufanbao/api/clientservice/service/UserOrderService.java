@@ -3,7 +3,6 @@ package com.wufanbao.api.clientservice.service;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.response.AlipayTradeFastpayRefundQueryResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
-import com.google.gson.reflect.TypeToken;
 import com.wufanbao.api.clientservice.common.*;
 import com.wufanbao.api.clientservice.common.alipay.AliPay;
 import com.wufanbao.api.clientservice.common.wechat.*;
@@ -12,9 +11,8 @@ import com.wufanbao.api.clientservice.config.ClientSetting;
 import com.wufanbao.api.clientservice.dao.*;
 import com.wufanbao.api.clientservice.entity.*;
 import com.xiaoleilu.hutool.http.HttpUtil;
-import com.xiaoleilu.hutool.log.StaticLog;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.httpclient.util.DateUtil;
+import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.channels.AcceptPendingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
@@ -113,7 +109,7 @@ public class UserOrderService {
         }
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("orderId", userOrderId);
+            jsonObject.put("userOrderId", userOrderId);
             jsonObject.put("machineId", machineId);
             rabbitMQSender.unLockSend(jsonObject);
         } catch (TimeoutException e) {
@@ -656,9 +652,10 @@ public class UserOrderService {
                     String resultCode = map.get("result_code");
                     if (resultCode.equals("SUCCESS")) {
                         long totalFee = Long.parseLong(map.get("total_fee"));
+                        long refundFee=Long.parseLong(map.get("refund_fee"));
                         String transaction_id = map.get("transaction_id");//微信支付订单号
                         long out_refund_no = Long.parseLong(map.get("out_refund_no_0"));//商户退款单号
-                        BigDecimal amount = BigDecimal.valueOf(totalFee).divide(BigDecimal.valueOf(100));
+                        BigDecimal amount = BigDecimal.valueOf(refundFee).divide(BigDecimal.valueOf(100));
                         userOrder = refundedUserOrder(userOrderId, out_refund_no, amount, transaction_id, payType);
                     }
                     return userOrder;
@@ -668,12 +665,14 @@ public class UserOrderService {
             case 3:
                 try {
                     AliPay aliPay = new AliPay();
-                    AlipayTradeFastpayRefundQueryResponse response = aliPay.refundQuery(String.valueOf(userOrderId));
+                    AlipayTradeFastpayRefundQueryResponse response = null;
+                    response = aliPay.refundQuery(String.valueOf(userOrderId));
                     if (response.isSuccess()) {
                         Double totalFee = Double.parseDouble(response.getTotalAmount());
+                        Double refundAmount = Double.parseDouble(response.getRefundAmount());
                         String trade_no = response.getTradeNo();//支付宝订单号
                         long capitalLogId = IDGenerator.generateById("capitalLogId", userOrderId);
-                        userOrder = refundedUserOrder(userOrderId, capitalLogId, BigDecimal.valueOf(totalFee), trade_no, payType);
+                        userOrder = refundedUserOrder(userOrderId, capitalLogId, BigDecimal.valueOf(refundAmount), trade_no, payType);
                     }
                     return userOrder;
                 } catch (Exception ex) {
@@ -960,9 +959,9 @@ public class UserOrderService {
         if (userOrderDao.refundUserOrderCapital(userOrderId, 4, amount) <= 0) {
             throw new ApiServiceException("退款变更订单资金记录失败");
         }
-        if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
+        /*if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
             throw new ApiServiceException("订单退款失败，请重试");
-        }
+        }*/
     }
 
     //生成取餐过程记录表
@@ -1004,7 +1003,7 @@ public class UserOrderService {
     //status=0,微信支付宝已支付，退款
     public void refundedUserOrderinvalid(UserOrder userOrder, long userOrderId, BigDecimal amount, String tradeNo, int payType) throws ApiServiceException {
         if (amount.compareTo(BigDecimal.ZERO) == 1) {
-            /*UserOrder userOrderDB = userOrderDao.getUserOrder(userOrderId);
+           /* UserOrder userOrderDB = userOrderDao.getUserOrder(userOrderId);
             if (userOrderDB.getActualAmount().compareTo(amount) != 0) {
                 throw new ApiServiceException("订单金额错误");
             }
@@ -1059,11 +1058,12 @@ public class UserOrderService {
         UserOrder userOrder = userOrderDao.getUserOrder(userOrderId);
 
         if (userOrder == null) {
-            throw new ApiServiceException("支付的订单不存在");
+            throw new ApiServiceException("支付的订单不存在!"+userOrderId);
         }
         if (userOrder.getStatus() >= 3) {
             return userOrder;
         }
+
         //如果订单已经失效，直接返回
         if (userOrder.getStatus() != 2) {
             return userOrder;
@@ -1100,13 +1100,9 @@ public class UserOrderService {
         return userOrder;
     }
 
-    //退款
+    //失效订单退款和机器故障退款
     @Transactional(rollbackFor = ApiServiceException.class)
     public void refundUserOrder(long userOrderId) throws ApiServiceException {
-   /*     refund(userOrderId);
-    }
-
-    private void refund(long userOrderId) throws ApiServiceException {*/
         UserOrder userOrder = userOrderDao.getUserOrder(userOrderId);
         if (userOrder.getStatus() > 4) {
             throw new ApiServiceException("订单已生效，无法退款");
@@ -1114,23 +1110,22 @@ public class UserOrderService {
         if (userOrder.getStatus() < 3) {
             throw new ApiServiceException("订单未支付，无法退款");
         }
-       /* BigDecimal amount = userOrder.getAmount();//订单金额
-        long userId = userOrder.getUserId();
-        BigDecimal actualAmount = userOrder.getActualAmount();//订单实际支付金额
-        BigDecimal receiveAmount = userOrder.getReceiveAmount();//订单实际支付金额
-        long discountId = userOrder.getDiscountId();//优惠券Id
-        int payType = userOrder.getPayType();//支付方式*/
         List<ProductOff> productOffs = productoffDao.getProductoffBySourceid(userOrderId);
         if (productOffs == null) {
             return;
         }
-        if (productOffs.size() == 0) {
-            unLockProduct(userOrderId, userOrder.getMachineId());
-            refundMoney(userOrderId, userOrder);
+        List<UserOrderLine> userOrderLines = userOrderDao.getUserOrderLines(userOrderId);
+        int total=0;
+        if(userOrderLines.size()==1){
+            total = userOrderLines.get(0).getQuantity();
+        }
+        if (productOffs.size() == 0||total==1) {
+            if(productOffs.size()==0){
+                unLockProduct(userOrderId, userOrder.getMachineId());
+            }
         } else {
             int sum = 0;
             //部分出餐库存变更
-            List<UserOrderLine> userOrderLines = userOrderDao.getUserOrderLines(userOrderId);
             for (UserOrderLine userOrderLine : userOrderLines) {
                 sum += userOrderLine.getQuantity();
             }
@@ -1162,11 +1157,252 @@ public class UserOrderService {
                     throw new ApiServiceException("更新机器库存失败");
                 }
             }
-            refundMoney(userOrderId, userOrder);
+        }
+        int refundQuantity =0;
+        BigDecimal refundAmount=BigDecimal.valueOf(0);
+        for (UserOrderLine userOrderLine : userOrderLines) {
+            refundQuantity=userOrderLine.getQuantity()-userOrderLine.getActualQuantity();
+            userOrderLine.setRefundQuantity(refundQuantity);
+            refundAmount=userOrderLine.getPrice().multiply(BigDecimal.valueOf(refundQuantity)).add(refundAmount);
+        }
+        if(refundAmount.compareTo(userOrder.getAmount())==0){
+            refund(userOrderId,userOrder);
+        }else {
+            refundMoney(userOrderId, userOrder, refundAmount,userOrderLines);
         }
     }
 
-    public void refundMoney(long userOrderId, UserOrder userOrder) throws ApiServiceException {
+    public void refundMoney(long userOrderId, UserOrder userOrder, BigDecimal refundAmount,List<UserOrderLine> userOrderLines) throws ApiServiceException {
+        BigDecimal planRefundAmount=refundAmount;
+        BigDecimal amount = userOrder.getAmount();//订单金额
+        long userId = userOrder.getUserId();
+        BigDecimal actualAmount = userOrder.getActualAmount();//订单实际支付金额
+        BigDecimal receiveAmount = userOrder.getReceiveAmount();//订单实际支付金额
+        long discountId = userOrder.getDiscountId();//优惠券Id
+        int payType = userOrder.getPayType();//支付方式
+        BigDecimal companyPayAmount = userOrder.getCompanyPayAmount();//企业付金额
+        BigDecimal familyPayAmount = userOrder.getFamilyPayAmount();//亲密付金额
+        BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
+        //优惠券金额
+        boolean isDiscount = discountAmount.compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
+        if (isDiscount) {
+            couponRefund(discountId, userOrderId);
+            planRefundAmount = planRefundAmount.subtract(discountAmount);
+            if (planRefundAmount.compareTo(BigDecimal.ZERO) == -1 || planRefundAmount.compareTo(BigDecimal.ZERO) == 0) {
+                //修改订单状态status=-4
+                if (userOrderDao.stepRefundUserOrder(userOrderId) <= 0) {
+                    throw new ApiServiceException("订单退款失败，请重试");
+                }
+                //插入表
+                OrderRefund orderRefund=new OrderRefund();
+                orderRefundInsert(orderRefund,userOrderId,userOrder,refundAmount);
+                orderRefund.setActualRefundAmount(BigDecimal.valueOf(0));
+                orderRefund.setRefundCompanyPayAmount(BigDecimal.valueOf(0));
+                orderRefund.setRefundFamilyPayAmount(BigDecimal.valueOf(0));
+                if(userOrderDao.insertOrderRefund(orderRefund)<=0){
+                    throw new ApiServiceException("订单退款失败，请重试");
+                }
+                for (UserOrderLine userOrderLine : userOrderLines) {
+                    OrderdetailRefund orderdetailRefund = orderdetailRefundInsert(userOrderLine, orderRefund);
+                    if(orderdetailRefund==null){
+                        continue;
+                    }
+                    if(userOrderDao.insertOrderdetailRefund(orderdetailRefund)<=0){
+                        throw new ApiServiceException("订单退款失败，请重试");
+                    }
+                }
+                sendRefundOrder(userOrder);
+                return;
+            }
+        }
+        //余额退款
+        if (actualAmount.compareTo(BigDecimal.ZERO) == 1) {
+            if (planRefundAmount.compareTo(actualAmount) == -1 || planRefundAmount.compareTo(actualAmount) == 0) {
+                refundType(userOrderId, actualAmount, planRefundAmount, payType, userId);
+                //插入表
+                OrderRefund orderRefund=new OrderRefund();
+                orderRefundInsert(orderRefund,userOrderId,userOrder,refundAmount);
+                orderRefund.setActualRefundAmount(planRefundAmount);
+                orderRefund.setRefundCompanyPayAmount(BigDecimal.valueOf(0));
+                orderRefund.setRefundFamilyPayAmount(BigDecimal.valueOf(0));
+                if(payType==2){
+                    orderRefund.setRefundWxpayAmount(planRefundAmount);
+                }else{
+                    orderRefund.setRefundWxpayAmount(BigDecimal.valueOf(0));
+                }
+                if(payType==3){
+                    orderRefund.setRefundAlipayAmount(planRefundAmount);
+                }else {
+                    orderRefund.setRefundAlipayAmount(BigDecimal.valueOf(0));
+                }
+                if(userOrderDao.insertOrderRefund(orderRefund)<=0){
+                    throw new ApiServiceException("订单退款失败，请重试");
+                }
+                for (UserOrderLine userOrderLine : userOrderLines) {
+                    OrderdetailRefund orderdetailRefund = orderdetailRefundInsert(userOrderLine, orderRefund);
+                    if(orderdetailRefund==null){
+                        continue;
+                    }
+                    if(userOrderDao.insertOrderdetailRefund(orderdetailRefund)<=0){
+                        throw new ApiServiceException("订单退款失败，请重试");
+                    }
+                }
+                sendRefundOrder(userOrder);
+                return;
+            } else {
+                refundType(userOrderId, actualAmount, actualAmount, payType, userId);
+                planRefundAmount = planRefundAmount.subtract(actualAmount);
+            }
+        }else {
+            if (userOrderDao.stepRefundUserOrder(userOrderId) <= 0) {
+                throw new ApiServiceException("订单退款失败，请重试");
+            }
+        }
+        //亲密付
+        boolean isFamilyPay = familyPayAmount.compareTo(BigDecimal.ZERO) == 1;
+        if (isFamilyPay) {
+            if (planRefundAmount.compareTo(familyPayAmount) == -1) {
+                familyPayAmount = planRefundAmount;
+            }
+            familyRefund(userOrderId, userOrder.getCreateTime(), userId, familyPayAmount);
+            //插入表
+            OrderRefund orderRefund=new OrderRefund();
+            orderRefundInsert(orderRefund,userOrderId,userOrder,refundAmount);
+            orderRefund.setActualRefundAmount(familyPayAmount.add(actualAmount));
+            orderRefund.setRefundFamilyPayAmount(familyPayAmount);
+            if(payType==2){
+                orderRefund.setRefundWxpayAmount(actualAmount);
+            }else {
+                orderRefund.setRefundWxpayAmount(BigDecimal.valueOf(0));
+            }
+            if(payType==3){
+                orderRefund.setRefundAlipayAmount(actualAmount);
+            }else {
+                orderRefund.setRefundAlipayAmount(BigDecimal.valueOf(0));
+            }
+            if(userOrderDao.insertOrderRefund(orderRefund)<=0){
+                throw new ApiServiceException("订单退款失败，请重试");
+            }
+            for (UserOrderLine userOrderLine : userOrderLines) {
+                OrderdetailRefund orderdetailRefund = orderdetailRefundInsert(userOrderLine, orderRefund);
+                if(orderdetailRefund==null){
+                    continue;
+                }
+                if(userOrderDao.insertOrderdetailRefund(orderdetailRefund)<=0){
+                    throw new ApiServiceException("订单退款失败，请重试");
+                }
+            }
+        }
+        //企业付款
+        boolean isCompanyPay = companyPayAmount.compareTo(BigDecimal.ZERO) == 1;
+        if (isCompanyPay) {
+            if (planRefundAmount.compareTo(companyPayAmount) == -1) {
+                companyPayAmount=planRefundAmount;
+            }
+            companyRefund(userOrderId, userId, companyPayAmount);
+            //插入表
+            OrderRefund orderRefund=new OrderRefund();
+            orderRefundInsert(orderRefund,userOrderId,userOrder,refundAmount);
+            orderRefund.setActualRefundAmount(companyPayAmount.add(actualAmount));
+            orderRefund.setRefundCompanyPayAmount(companyPayAmount);
+            if(payType==2){
+                orderRefund.setRefundWxpayAmount(actualAmount);
+            }else {
+                orderRefund.setRefundWxpayAmount(BigDecimal.valueOf(0));
+            }
+            if(payType==3){
+                orderRefund.setRefundAlipayAmount(actualAmount);
+            }else {
+                orderRefund.setRefundAlipayAmount(BigDecimal.valueOf(0));
+            }
+            if(userOrderDao.insertOrderRefund(orderRefund)<=0){
+                throw new ApiServiceException("订单退款失败，请重试");
+            }
+            for (UserOrderLine userOrderLine : userOrderLines) {
+                OrderdetailRefund orderdetailRefund = orderdetailRefundInsert(userOrderLine, orderRefund);
+                if(orderdetailRefund==null){
+                    continue;
+                }
+                if(userOrderDao.insertOrderdetailRefund(orderdetailRefund)<=0){
+                    throw new ApiServiceException("订单退款失败，请重试");
+                }
+            }
+        }
+        sendRefundOrder(userOrder);
+    }
+    public void orderRefundInsert(OrderRefund orderRefund,long userOrderId,UserOrder userOrder,BigDecimal refundAmount){
+        long orderRefundId = IDGenerator.generateById("orderRefundId", userOrderId);
+        orderRefund.setOrderRefundId(orderRefundId);
+        orderRefund.setOrderId(userOrderId);
+        orderRefund.setJoinCompanyId(userOrder.getJoinCompanyId());
+        orderRefund.setMachineId(userOrder.getMachineId());
+        orderRefund.setUserId(userOrder.getUserId());
+        orderRefund.setStatus(1);
+        orderRefund.setPlanRefundAmount(refundAmount);
+        orderRefund.setRefundDiscountAmount(userOrder.getDiscountAmount());
+    }
+    public OrderdetailRefund orderdetailRefundInsert(UserOrderLine userOrderLine,OrderRefund orderRefund){
+        if(userOrderLine.getRefundQuantity()==0){
+            return null;
+        }
+        OrderdetailRefund orderdetailRefund=new OrderdetailRefund();
+        long orderDetailRefundId=IDGenerator.generateById("orderDetailRefundId",orderRefund.getOrderRefundId());
+        orderdetailRefund.setOrderDetailRefundId(orderDetailRefundId);
+        orderdetailRefund.setOrderId(userOrderLine.getUserOrderId());
+        orderdetailRefund.setOrderRefundId(orderRefund.getOrderRefundId());
+        orderdetailRefund.setProductGlobalId(userOrderLine.getProductGlobalId());
+        orderdetailRefund.setQuantity(userOrderLine.getQuantity());
+        orderdetailRefund.setActualRefundQuantity(userOrderLine.getRefundQuantity());
+        orderdetailRefund.setPrice(userOrderLine.getPrice());
+//        orderdetailRefund.setRemark("优惠券退款");
+        return orderdetailRefund;
+    }
+    public void sendRefundOrder(UserOrder userOrder) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userOrderId",userOrder.getUserOrderId());
+        jsonObject.put("machineId",userOrder.getMachineId());
+        rabbitMQSender.sendRefundOrder(jsonObject);
+    }
+    public void refundType(long userOrderId,BigDecimal actualAmount,BigDecimal acAmount,int payType,long userId) throws ApiServiceException {
+        if (actualAmount.compareTo(BigDecimal.ZERO) == 1) {
+            switch (payType) {
+                case 2://微信退款
+                    try {
+                        if (userOrderDao.refundUserOrder(userOrderId) <= 0) {
+                            throw new ApiServiceException("订单退款失败，请重试");
+                        }
+                        WechatPay wechatPay = new WechatPay();
+                        long capitalLogId = IDGenerator.generateById("userCapitalLogId", userOrderId);
+                        wechatPay.refund(String.valueOf(userOrderId), String.valueOf(capitalLogId), actualAmount, acAmount, clientSetting.getPayCallback() + "/webapi/wechat/refundNotify");
+                    } catch (Exception e) {
+                        throw new ApiServiceException("微信退款失败");
+                    }
+                    break;
+                case 3://支付宝退款
+                    if (userOrderDao.refundUserOrder(userOrderId) <= 0) {
+                        throw new ApiServiceException("订单退款失败，请重试");
+                    }
+                    try {
+                        AliPay aliPay = new AliPay();
+                        aliPay.refund(String.valueOf(userOrderId), acAmount);
+                    } catch (AlipayApiException e) {
+                        throw new ApiServiceException("支付宝退款失败");
+                    }
+                    break;
+                case 4://余额退款
+                    balanceRefund(userId, userOrderId, acAmount);
+                    //修改订单状态status=-4
+                    if (userOrderDao.stepRefundUserOrder(userOrderId) <= 0) {
+                        throw new ApiServiceException("订单退款失败，请重试");
+                    }
+                    break;
+                default:
+                    throw new ApiServiceException("支付方式选择错误");
+            }
+        }
+    }
+    //订单退款全部
+    public void refund(long userOrderId, UserOrder userOrder) throws ApiServiceException {
         BigDecimal amount = userOrder.getAmount();//订单金额
         long userId = userOrder.getUserId();
         BigDecimal actualAmount = userOrder.getActualAmount();//订单实际支付金额
@@ -1178,19 +1414,20 @@ public class UserOrderService {
         BigDecimal discountAmount = userOrder.getDiscountAmount();//优惠券金额
         //企业付款
         boolean isCompanyPay = companyPayAmount.compareTo(BigDecimal.ZERO) == 1;
-        //亲密付
-        boolean isFamilyPay = familyPayAmount.compareTo(BigDecimal.ZERO) == 1;
-        //优惠券金额
-        boolean isDiscount = discountAmount.compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
         if (isCompanyPay) {
             companyRefund(userOrderId, userId, companyPayAmount);
         }
+        //亲密付
+        boolean isFamilyPay = familyPayAmount.compareTo(BigDecimal.ZERO) == 1;
         if (isFamilyPay) {
             familyRefund(userOrderId, userOrder.getCreateTime(), userId, familyPayAmount);
         }
+        //优惠券金额
+        boolean isDiscount = discountAmount.compareTo(BigDecimal.ZERO) == 1 && userOrder.getDiscountId() > 0;
         if (isDiscount) {
             couponRefund(discountId, userOrderId);
         }
+
         if (actualAmount.compareTo(BigDecimal.ZERO) == 1) {
             switch (payType) {
                 case 2://微信退款
@@ -1218,6 +1455,9 @@ public class UserOrderService {
                     break;
                 case 4://余额退款
                     balanceRefund(userId, userOrderId, actualAmount);
+                    if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
+                        throw new ApiServiceException("订单退款失败，请重试");
+                    }
                     break;
                 default:
                     throw new ApiServiceException("支付方式选择错误");
@@ -1240,6 +1480,7 @@ public class UserOrderService {
     }
 
     private UserOrder refundedUserOrder(long userOrderId, long capitalLogId, BigDecimal amount, String tradeNo, int payType) throws ApiServiceException {
+        logger.info("------------------------------000--------------------------------------------------------");
         if (userOrderId <= 0) {
             throw new ApiServiceException("订单id不能为空");
         }
@@ -1251,20 +1492,34 @@ public class UserOrderService {
         }
         UserOrder userOrder = userOrderDao.getUserOrder(userOrderId);
         if (userOrder == null) {
-            throw new ApiServiceException("支付的订单不存在");
-        }
-        if (userOrder.getActualAmount().compareTo(amount) != 0) {
-            throw new ApiServiceException("订单金额错误");
+            throw new ApiServiceException("支付的订单不存在"+userOrderId);
         }
         if (userOrder.getStatus() != -1) {
             return userOrder;
         }
-
-        if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
-            throw new ApiServiceException("订单退款失败");
+        OrderRefund orderRefund=userOrderDao.getOrderRefund(userOrderId);
+        if(orderRefund==null){
+            if (userOrder.getActualAmount().compareTo(amount) != 0) {
+                throw new ApiServiceException("订单金额错误");
+            }
+            if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
+                throw new ApiServiceException("订单退款失败");
+            }
+            userOrder.setStatus(-3);
+        }else{
+            logger.info("------------------------------111--------------------------------------------------------");
+            if((orderRefund.getRefundWxpayAmount().compareTo(amount)!=0)&&(orderRefund.getRefundAlipayAmount().compareTo(amount)!=0)){
+                logger.info(""+amount);
+                throw new ApiServiceException("订单金额局部退款错误");
+            }
+            logger.info(""+amount);
+            logger.info("------------------------------222--------------------------------------------------------");
+            if (userOrderDao.stepRefundUserOrder(userOrderId) <= 0) {
+                throw new ApiServiceException("订单退款失败，请重试");
+            }
+            logger.info("------------------------------333--------------------------------------------------------");
+            userOrder.setStatus(-4);
         }
-        userOrder.setStatus(-3);
-
         String payTypeName = "";
         String payTypeDescription = "";
         if (payType == 2) {
@@ -1283,6 +1538,63 @@ public class UserOrderService {
         return userOrder;
     }
 
+    //插入微信分步退款流水
+    @Transactional(rollbackFor = ApiServiceException.class)
+    public void insertWxuserorderrefund(Map<String,String> requltMap,Map<String,String> map) throws ApiServiceException {
+        Wxuserorderrefund wxuserorderrefund=new Wxuserorderrefund();
+        long reqId = IDGenerator.generate("reqId");
+        wxuserorderrefund.setReqId(reqId);
+        wxuserorderrefund.setReturnCode(requltMap.get("return_msg"));
+        wxuserorderrefund.setReturnMsg(requltMap.get("return_code"));
+        wxuserorderrefund.setAppid( requltMap.get("appid"));
+        wxuserorderrefund.setMchId(requltMap.get("mch_id"));
+        wxuserorderrefund.setNonceStr(requltMap.get("nonce_str"));
+        wxuserorderrefund.setReqInfo(requltMap.get("req_info"));
+        wxuserorderrefund.setTransactionId(map.get("transaction_id"));
+        wxuserorderrefund.setOutTradeNo(map.get("out_trade_no"));
+        wxuserorderrefund.setRefundId(map.get("refund_id"));
+        wxuserorderrefund.setOutRefundNo(map.get("out_refund_no"));
+        wxuserorderrefund.setTotalFee(Integer.parseInt(map.get("total_fee")));
+        wxuserorderrefund.setSettlementTotalFee(Integer.parseInt(map.get("settlement_total_fee")));
+        wxuserorderrefund.setRefundFee(Integer.parseInt(map.get("refund_fee")));
+        wxuserorderrefund.setSettlementRefundFee(Integer.parseInt(map.get("settlement_refund_fee")));
+        wxuserorderrefund.setRefundStatus(map.get("refund_status"));
+        wxuserorderrefund.setSuccessTime(map.get("success_time"));
+        wxuserorderrefund.setRefundRecvAccout(map.get("refund_recv_accout"));
+        wxuserorderrefund.setRefundAccount(map.get("refund_account"));
+        wxuserorderrefund.setRefundRequestSource(map.get("refund_request_source"));
+        if(userOrderDao.insertWxuserorderrefund(wxuserorderrefund)<=0){
+            throw new ApiServiceException("插入微信资金流水失败");
+        }
+    }
+    public void insertAlipayuserorderrefund(Map<String,String> param) throws ApiServiceException, ParseException {
+        Alipayuserorderrefund alipayuserorderrefund=new Alipayuserorderrefund();
+        long reqId = IDGenerator.generate("reqId");
+        alipayuserorderrefund.setReqId(reqId);
+        alipayuserorderrefund.setCode(param.get("code"));
+        alipayuserorderrefund.setMsg(param.get("msg"));
+        alipayuserorderrefund.setSubCode(param.get("sub_code"));
+        alipayuserorderrefund.setSubMsg(param.get("sub_msg"));
+        alipayuserorderrefund.setSign(param.get("sign"));
+        alipayuserorderrefund.setTradeNo(param.get("trade_no"));
+        alipayuserorderrefund.setOutTradeNo(param.get("out_trade_no"));
+        alipayuserorderrefund.setBuyerLogonId(param.get("buyer_logon_id"));
+        alipayuserorderrefund.setFundChange(param.get("fund_change"));
+        alipayuserorderrefund.setRefundFee(param.get("refund_fee"));
+        alipayuserorderrefund.setRefundCurrency(param.get("refund_currency"));
+//        alipayuserorderrefund.setGmtRefundPay(DateUtils.StringToDate(param.get("gmt_refund_pay")));
+        alipayuserorderrefund.setRefundDetailItemList(param.get("refund_detail_item_list"));
+        alipayuserorderrefund.setStoreName(param.get("store_name"));
+        alipayuserorderrefund.setBuyerUserId(param.get("buyer_user_id"));
+        alipayuserorderrefund.setRefundPresetPaytoolList(param.get("refund_preset_paytool_list"));
+        alipayuserorderrefund.setRefundSettlementId(param.get("refund_settlement_id"));
+        alipayuserorderrefund.setPresentRefundBuyerAmount(param.get("present_refund_buyer_amount"));
+        alipayuserorderrefund.setPresentRefundDiscountAmount(param.get("present_refund_discount_amount"));
+        alipayuserorderrefund.setPresentRefundMdiscountAmount(param.get("present_refund_mdiscount_amount"));
+        if(userOrderDao.insertAlipayuserorderrefund(alipayuserorderrefund)<=0){
+            throw new ApiServiceException("插入支付宝资金流水失败");
+        }
+    }
     /**
      * 获取订单列表
      *
@@ -1482,7 +1794,7 @@ public class UserOrderService {
      *
      * @return
      */
-    public Data getUserOrder(long userOrderId) throws ParseException {
+    public Data getUserOrder(long userOrderId) throws ParseException, ApiServiceException {
         Data data = new Data();
         Data userOrder = userOrderDao.getUserOrderDetail(userOrderId);
         int status = Integer.parseInt(userOrder.get("status").toString());
@@ -1495,13 +1807,13 @@ public class UserOrderService {
         amountBD = amountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
         String amount = amountBD.toString();
         userOrder.put("amount", amount);
+
         String actualAmountstr = userOrder.get("actualAmount").toString();
         BigDecimal actualAmountBD = new BigDecimal(actualAmountstr);
         actualAmountBD = actualAmountBD.setScale(2, BigDecimal.ROUND_HALF_UP);
         String actualAmount = actualAmountBD.toString();
         userOrder.put("actualAmount", actualAmount);
         String sp = String.valueOf(userOrder.get("seekPhotos"));
-
         if (!StringUtils.isNullOrEmpty(sp)) {
             userOrder.put("seekPhotos", sp);
         }
@@ -1524,6 +1836,39 @@ public class UserOrderService {
             }
             userOrder.put("seekPhotos",seekPhotos);
         }*/
+        String refundAmount="";
+        if(status==-4){
+            OrderRefund orderRefund=userOrderDao.getOrderRefund(userOrderId);
+            if (orderRefund==null){
+                throw new ApiServiceException("订单不存在");
+            }
+            BigDecimal actualRefundAmount = orderRefund.getActualRefundAmount();
+            BigDecimal refundFamilyPayAmount = orderRefund.getRefundFamilyPayAmount();
+            BigDecimal refundCompanyPayAmount = orderRefund.getRefundCompanyPayAmount();
+
+            BigDecimal refundAmountBd=actualRefundAmount.subtract(refundCompanyPayAmount).subtract(refundFamilyPayAmount);
+            refundAmountBd=refundAmountBd.setScale(2,BigDecimal.ROUND_HALF_UP);
+            refundAmount= refundAmountBd.toString();
+
+            refundFamilyPayAmount.setScale(2,BigDecimal.ROUND_HALF_UP);
+            String familyPayAmount = refundFamilyPayAmount.toString();
+            userOrder.put("familyPayAmount",familyPayAmount);
+
+            refundCompanyPayAmount.setScale(2,BigDecimal.ROUND_HALF_UP);
+            String companyPayAmount = refundCompanyPayAmount.toString();
+            userOrder.put("companyPayAmount",companyPayAmount);
+
+            BigDecimal refundDiscountAmount = orderRefund.getRefundDiscountAmount();
+            refundDiscountAmount.setScale(2,BigDecimal.ROUND_HALF_UP);
+            String discountAmount = refundDiscountAmount.toString();
+            userOrder.put("discountAmount",discountAmount);
+
+            long orderRefundId = orderRefund.getOrderRefundId();
+            userOrder.put("orderRefundId",orderRefundId);
+        }else {
+            refundAmount=actualAmount;
+        }
+        userOrder.put("refundAmount",refundAmount);
         data.put("userOrder", userOrder);
         List<Data> userOrderLines = userOrderDao.getUserOrderLineAndProducts(userOrderId);
         for (Data userOrderLine : userOrderLines) {
@@ -1640,7 +1985,6 @@ public class UserOrderService {
             if (0 != templateResult.getErrcode()) {
                 logger.info(String.valueOf(templateResult.getErrcode()));
                 logger.info(templateResult.toString());
-//                logger.info(openId+","+quantity+","+machineName+","+takeNo+","+access_token);
                 throw new ApiServiceException("消息推送失败" + templateResult.getErrmsg());
             }
         }
@@ -1666,10 +2010,6 @@ public class UserOrderService {
     public void sendTemplateTake(Long userOrderId, String openId, String quantity, String machineName, String templateId) throws ApiServiceException {
         // 获取基础支持的access_token
         String access_token = wechatAuth.getBasicAccessToken();
-//        BasicAccessToken basicAccessToken= wechatAuth.getBasicAccessToken();
-       /* String basicAccessTokenStr=JsonUtils.GsonString(basicAccessToken);
-        Map<String,String> map=JsonUtils.GsonToMaps(basicAccessTokenStr);
-        String access_token=map.get("access_token");*/
         // 发送模板消息
         String resultUrl2 = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + access_token;
         // 封装基础数据
@@ -1731,5 +2071,39 @@ public class UserOrderService {
         }
         return mb;
     }
+    //修复保温柜库存
+    @Transactional(rollbackFor = ApiServiceException.class)
+    public void repaireProductPrepares(ProductPrepare productPrepare, long machineId) throws ApiServiceException {
+        if (productDao.unLockProductPrepare(machineId, productPrepare.getProductGlobalId()) <= 0) {
+            logger.error("更新预制作商品库存失败!" + machineId + "," + productPrepare.getProductGlobalId());
+            throw new ApiServiceException("更新预制作商品库存失败!");
+        }
+        if (productDao.unLockMachineProductPrepare(machineId) <= 0) {
+            logger.error("更新预制作机器库存失败!" + machineId);
+            throw new ApiServiceException("更新预制作机器库存失败");
+        }
+        if(productDao.updateRepairStatus(productPrepare.getProductOffId())<=0){
+            throw new ApiServiceException("更新预制做表失败");
+        }
+    }
 
+    @Transactional(rollbackFor = ApiServiceException.class)
+    public Data getOrderDetailRefund(long orderRefundId) throws ApiServiceException {
+        List<Data> orderdetailRefund=userOrderDao.getOrderDetailRefund(orderRefundId);
+        if (orderdetailRefund==null||orderdetailRefund.size()==0){
+            throw new ApiServiceException("退款明细不存在");
+        }
+        Data data=new Data();
+        BigDecimal total=BigDecimal.valueOf(0);
+        for (Data refund : orderdetailRefund) {
+            String priceStr=refund.get("price").toString();
+            BigDecimal price = new BigDecimal(priceStr);
+            String refundQuantityStr = refund.get("actualRefundquantity").toString();
+            long refundQuantity = Long.parseLong(refundQuantityStr);
+            total=price.multiply(BigDecimal.valueOf(refundQuantity)).add(total);
+        }
+        data.put("orderdetailRefund",orderdetailRefund);
+        data.put("total",total);
+        return data;
+    }
 }

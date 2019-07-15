@@ -122,22 +122,7 @@ public class RabbitMQConfig {
     Binding bindingExchangeUserOrderEx6(Queue userOrderEx6Queue, FanoutExchange fanoutExchangeUserOrderEx6) {
         return BindingBuilder.bind(userOrderEx6Queue).to(fanoutExchangeUserOrderEx6);
     }
-
-    @Bean
-    public Queue zhangShuaiTestQueue() {
-        //队列名称，是否持久化
-        //return new Queue("UserOrderEx6");
-        //return new AnonymousQueue();
-        return new Queue("ZhaoJingTest");
-    }
-    @Bean
-    FanoutExchange fanoutExchangeZhangShuaiTest() {
-        return new FanoutExchange("zhangShuaiTestQueue");
-    }
-    @Bean
-    Binding bindingExchangeZhaojingTest(Queue zhangShuaiTestQueue, FanoutExchange fanoutExchangeZhangShuaiTest) {
-        return BindingBuilder.bind(zhangShuaiTestQueue).to(fanoutExchangeZhangShuaiTest);
-    }
+    
     @Bean
     public Queue OrderFetchCompletedQueue() {
         //队列名称，是否持久化
@@ -177,4 +162,6 @@ public class RabbitMQConfig {
     Binding bindingExchangeUserpayUnBind(Queue userpayUnBindQueue,FanoutExchange fanoutExchangeUserpayUnBind){
         return BindingBuilder.bind(userpayUnBindQueue).to(fanoutExchangeUserpayUnBind);
     }
+
+
 }

@@ -4,7 +4,6 @@ import com.wufanbao.api.clientservice.entity.Product;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.List;
 @Repository
 public interface ProductDao {
@@ -66,5 +65,31 @@ public interface ProductDao {
      */
     int unLockMachineProduct(@Param("machineId") long machineId, @Param("quantity") int quantity);
 
+    /**
+     * 解锁商品库存
+     * @param machineId
+     * @param productGlobalId
+     * @return
+     */
+    int unLockProductPrepare(@Param("machineId") long machineId,@Param("productGlobalId") int productGlobalId);
 
+    /**
+     * 解锁机器库存
+     * @param machineId
+     * @return
+     */
+    int unLockMachineProductPrepare(long machineId);
+
+    /**
+     * 更新状态
+     * @param productOffId
+     * @return
+     */
+    int updateRepairStatus(long productOffId);
+
+    /**
+     * 根据productGlobalId获取商品名字
+     * @param productGlobalId
+     */
+    String getProductGlobalName(long productGlobalId);
 }

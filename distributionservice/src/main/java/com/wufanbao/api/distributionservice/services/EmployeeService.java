@@ -5,7 +5,10 @@ import com.alibaba.fastjson.TypeReference;
 import com.wufanbao.api.distributionservice.config.Code;
 import com.wufanbao.api.distributionservice.config.CodeException;
 import com.wufanbao.api.distributionservice.config.Setting;
+import com.wufanbao.api.distributionservice.dao.CompanyDao;
 import com.wufanbao.api.distributionservice.dao.EmployeeDao;
+import com.wufanbao.api.distributionservice.entities.Company;
+import com.wufanbao.api.distributionservice.entities.CompanyType;
 import com.wufanbao.api.distributionservice.entities.Employee;
 import com.wufanbao.api.distributionservice.tools.CommonFun;
 import com.wufanbao.api.distributionservice.tools.RedisUtils;
@@ -22,7 +25,9 @@ public class EmployeeService {
     EmployeeDao employeeDao;
 
     @Autowired
-    RedisUtils redisUtils;
+    private RedisUtils redisUtils;
+    @Autowired
+    private CompanyDao companyDao;
 
     @Autowired
     Setting setting;
@@ -58,6 +63,16 @@ public class EmployeeService {
         }
         if(!employee.getIsActive()){
             throw new CodeException(Code.employeeForbid);
+        }
+        long companyId = employee.getCompanyId();
+
+        Company company=companyDao.getCompany(employee.getCompanyId());
+
+        if(company.getCompanyType()!=4){
+            throw new CodeException(Code.employeeNotAllow);
+        }
+        if(!company.getIsActive()){
+            throw new CodeException(Code.employeeLoginError);
         }
         //检查token 假如存在以前的token，删除以前的token缓存
         String employeeStoreKey=EmployeeStorePrefix+employee.getEmployeeId();

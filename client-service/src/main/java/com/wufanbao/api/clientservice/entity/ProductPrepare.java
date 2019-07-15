@@ -20,12 +20,22 @@ public class ProductPrepare {
     private Date heatedTime;
     //保温仓出仓时间,
     private Date prepareOut;
+    //修复状态
+    private int repairStatus;
     //冷冻仓位置(仅记录),
     private int freezerOutPotion;
     //保温仓入位置(仅记录),
     private int prepareInPotion;
     //保温仓出位置(仅记录),
     private int prepareOutPosition;
+
+    public int getRepairStatus() {
+        return repairStatus;
+    }
+
+    public void setRepairStatus(int repairStatus) {
+        this.repairStatus = repairStatus;
+    }
 
     public long getPrepareId() {
         return this.prepareId;

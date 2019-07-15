@@ -9,33 +9,6 @@ public class UShare {
     private String name;
     private String gender;
     private String iconurl;
-//    private String nickName;
-//    private String sex;
-//    private String headimgurl;
-
-/*    public String getHeadimgurl() {
-        return headimgurl;
-    }
-
-    public void setHeadimgurl(String headimgurl) {
-        this.headimgurl = headimgurl;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public void setNickName(String nickName) {
-        this.nickName = nickName;
-    }*/
 
     public String getUid() {
         return uid;

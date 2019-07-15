@@ -3,9 +3,10 @@ package com.wufanbao.api.distributionservice.dao;
 import com.wufanbao.api.distributionservice.entities.DistributionProductLine;
 import com.wufanbao.api.distributionservice.transfer.DistributionProductLineInfo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository
 public interface DistributionProductLineDao {
 
     /**

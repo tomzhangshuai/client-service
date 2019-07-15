@@ -13,6 +13,7 @@ import com.wufanbao.api.distributionservice.transfer.SupplementOrderLineInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +27,13 @@ import java.util.Map;
 public class SupplementOrderService {
 
     @Autowired
-    SupplementOrderDao supplementOrderDao;
+    private SupplementOrderDao supplementOrderDao;
 
     @Autowired
-    SupplementOrderLineDao supplementOrderLineDao;
+    private SupplementOrderLineDao supplementOrderLineDao;
 
     @Autowired
-    ProductDao productDao;
+    private ProductDao productDao;
 
     @Autowired
     DistributionProductLineDao distributionProductLineDao;
@@ -94,8 +95,7 @@ public class SupplementOrderService {
                     break;
                 }
             }
-            if(machineProduct==null||distributionProduct==null)
-            {
+            if(machineProduct==null||distributionProduct==null) {
                 //车辆或着机器中不存在相应的商品信息 ，不卸货上架
                 continue;
             }
@@ -157,12 +157,9 @@ public class SupplementOrderService {
         if(distributionOrderId<1){
             distributionOrderId= distributionOrderLineDao.getDistributionOrderIdBySupplementOrderId(supplementOrderId);
         }
-
-        if(distributionOrderId<1)
-        {
+        if(distributionOrderId<1){
             throw new CodeException(Code.dataError.getCode(),"下货请求数据不正确");
         }
-
         List<SupplementOrderLine> dblines=supplementOrderLineDao.getSupplementOrderLines(supplementOrderId);
         SupplementOrderLine modifyLine=null;
         int extraQuantity=0;        //额外配送发货数量,
@@ -183,36 +180,27 @@ public class SupplementOrderService {
             }
             dumpQuantity=modifyLine.getDumpQuantity();
             extraQuantity=dumpQuantity-dbline.getQuantity();  //额外配送发货数量=下货数量-quantity预计商品配送数量
-            if(extraQuantity<0)
-            {
+            if(extraQuantity<0){
                 extraQuantity=0;
             }
-
-            if(dumpQuantity>dbline.getExpectQuantity())
-            {
+            if(dumpQuantity>dbline.getExpectQuantity()){
                 String productName=productGlobalDao.getProductNameById(dbline.getProductGlobalId());
                 throw new CodeException(Code.dataError.getCode(),"编号为"+productName+"的商品：下货数量"+dumpQuantity+"大于期望补货数量"+dbline.getExpectQuantity());
             }
-
             changes=supplementOrderLineDao.dumpProduct(dbline.getSupplementOrderId(),dbline.getProductGlobalId(),dumpQuantity);
-            if(changes<1)
-            {
+            if(changes<1){
                 throw new CodeException(Code.dataError.getCode(),"更新下货商品时发生异常");
             }
             changes=distributionProductLineDao.dump(distributionOrderId,dbline.getProductGlobalId(),dumpQuantity,extraQuantity);
-            if(changes<1)
-            {
+            if(changes<1){
                 throw new CodeException(Code.dataError.getCode(),"下货失败:在途库存不足"+"下货数量："+dumpQuantity+"额外配送数量"+extraQuantity);
             }
         }
-
         //更新补货单状态到6
         changes=supplementOrderDao.setSupplementStatus(supplementOrderId,6);
-        if(changes<1)
-        {
+        if(changes<1){
             throw new CodeException(Code.dataInvaild.getCode(),"补货单状态已改变");
         }
-
         //更新配送信息
         distributionOrderLineDao.dumpArrived(distributionOrderId,supplementOrderId);
     }

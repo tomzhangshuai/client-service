@@ -463,7 +463,7 @@
         update usercoupon set status=2 where couponId=#{couponId} and status=1;
     </update>
     <update id="refundCoupon">
-        update usercoupon set status=1 where couponId=#{couponId} and status=2;
+        update usercoupon set status=1,endtime=DATE_ADD(endtime,INTERVAL 3 DAY) where couponId=#{couponId} and status=2;
     </update>
     <update id="addCouponDefinitionUsed">
         update coupondefinition set used=used+1 where couponDefinitionId=#{couponDefinitionId}

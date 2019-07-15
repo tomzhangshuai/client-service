@@ -1,5 +1,8 @@
 package com.wufanbao.api.clientservice.entity;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 public class Alipayuserorderrefund {
 
   private long reqId;
@@ -21,12 +24,12 @@ public class Alipayuserorderrefund {
   private String buyerLogonId;
   //本次退款是否发生了资金变化
   private String fundChange;
-  //
+  //退款总金额
   private String refundFee;
   //退款币种信息
   private String refundCurrency;
   //退款支付时间
-  private String gmtRefundPay;
+  private Date gmtRefundPay;
   //退款使用的资金渠道
   private String refundDetailItemList;
   //交易在支付时候的门店名称
@@ -35,8 +38,8 @@ public class Alipayuserorderrefund {
   private String buyerUserId;
   //退回的前置资产列表
   private String refundPresetPaytoolList;
-  //本次退款针对收款方的退收费金额
-  private String refundChargeAmount;
+/*  //本次退款针对收款方的退收费金额
+  private String refundChargeAmount;*/
   //退款清算编号，用于清算对账使用
   private String refundSettlementId;
   //本次退款金额中买家退款金额
@@ -180,11 +183,11 @@ public class Alipayuserorderrefund {
   }
 
 
-  public String getGmtRefundPay() {
+  public Date getGmtRefundPay() {
     return gmtRefundPay;
   }
 
-  public void setGmtRefundPay(String gmtRefundPay) {
+  public void setGmtRefundPay(Date gmtRefundPay) {
     this.gmtRefundPay = gmtRefundPay;
   }
 
@@ -225,14 +228,14 @@ public class Alipayuserorderrefund {
   }
 
 
-  public String getRefundChargeAmount() {
+ /* public String getRefundChargeAmount() {
     return refundChargeAmount;
   }
 
   public void setRefundChargeAmount(String refundChargeAmount) {
     this.refundChargeAmount = refundChargeAmount;
   }
-
+*/
 
   public String getRefundSettlementId() {
     return refundSettlementId;

@@ -1066,6 +1066,13 @@ public class UserService {
         if (masterUserId <= 0 || userId <= 0) {
             throw new ApiServiceException("修改限额用户id或者主账号id参数异常");
         }
+        List<UserOrder> userOrders=userOrderDao.getIncompleteUserOrder(userId);
+        if(userOrders==null){
+            return;
+        }
+        if(userOrders.size()>0){
+            throw new ApiServiceException("子账号有未完成的订单，无法修改额度");
+        }
         if (userDao.updateUserfamilypayrelation(masterUserId, userId, type, islimit, BigDecimal.valueOf(amount), BigDecimal.ZERO, new Date()) <= 0) {
             throw new ApiServiceException("修改限额失败，请重试");
         }

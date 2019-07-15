@@ -89,7 +89,6 @@ public class UserOrderController extends BaseController {
                 long productId = Long.parseLong(dataUserOrderLine.get("productId").toString());
                 int quantity = Integer.parseInt(dataUserOrderLine.get("quantity").toString());
                 double price = Double.valueOf(dataUserOrderLine.get("price").toString());
-
                 if (quantity <= 0 || productId <= 0) {
                     return responseData.error("确认订单参数数据错误").sign(null);
                 }
@@ -285,16 +284,19 @@ public class UserOrderController extends BaseController {
         }
         if (requltMap.containsKey("return_code") && requltMap.get("return_code").toString().equalsIgnoreCase("SUCCESS")) {
             try {
-                String reqInfo = requltMap.get("req_info").toString();
+                String reqInfo = requltMap.get("req_info");
                 WechatPay wechatPay = new WechatPay();
                 Map<String, String> map = wechatPay.decodeData(reqInfo);
                 long userOrderId = Long.parseLong(map.get("out_trade_no"));
                 long totalFee = Long.parseLong(map.get("total_fee"));
+                long refundFee=Long.parseLong(map.get("refund_fee"));
                 String transaction_id = map.get("transaction_id");//微信支付订单号
                 String refundStatus=map.get("refund_status");
                 long out_refund_no = Long.parseLong(map.get("out_refund_no"));//商户退款单号
-                BigDecimal amount = BigDecimal.valueOf(totalFee).divide(BigDecimal.valueOf(100));
+//                BigDecimal amount = BigDecimal.valueOf(totalFee).divide(BigDecimal.valueOf(100));
+                BigDecimal amount = BigDecimal.valueOf(refundFee).divide(BigDecimal.valueOf(100));
                 if("SUCCESS".equals(refundStatus)){
+                    userOrderService.insertWxuserorderrefund(requltMap,map);
                     userOrderService.refundNotify(userOrderId, out_refund_no, amount, transaction_id, 2);
                     PrintWriter writer = null;
                     try {
@@ -317,21 +319,32 @@ public class UserOrderController extends BaseController {
     @PostMapping("/webapi/alipay/payNotify")
     public void alipayPayNotify(HttpServletRequest request, HttpServletResponse response) {
         String tradeStatus = request.getParameter("trade_status");
+        String refundStatus=request.getParameter("refund_status");
         if ("TRADE_SUCCESS".equals(tradeStatus)) {
             Enumeration<?> pNames = request.getParameterNames();
             Map<String, String> param = new HashMap<String, String>();
             try {
+                logger.info("----------------------------------");
                 while (pNames.hasMoreElements()) {
                     String pName = (String) pNames.nextElement();
                     param.put(pName, request.getParameter(pName));
+                    logger.info(pName+"="+request.getParameter(pName));
                 }
                 AliPay aliPay = new AliPay();
                 if (aliPay.checkSign(param)) {
                     try {
                         long userOrderId = Long.parseLong(param.get("out_trade_no"));
-                        Double totalFee = Double.parseDouble(param.get("total_amount"));
                         String trade_no = param.get("trade_no");//支付宝订单号
-                        userOrderService.payNotify(userOrderId, BigDecimal.valueOf(totalFee), trade_no, 3);
+                        String refund_fee = param.get("refund_fee");
+                        if(!StringUtils.isNullOrEmpty(refund_fee)){
+                            Double refundFee=Double.parseDouble(refund_fee );
+                            long capitalLogId = IDGenerator.generateById("capitalLogId", userOrderId);
+                            userOrderService.insertAlipayuserorderrefund(param);
+                            userOrderService.refundNotify(userOrderId, capitalLogId, BigDecimal.valueOf(refundFee), trade_no , 3);
+                        }else {
+                            Double totalFee = Double.parseDouble(param.get("total_amount"));
+                            userOrderService.payNotify(userOrderId, BigDecimal.valueOf(totalFee), trade_no, 3);
+                        }
                         PrintWriter writer = null;
                         try {
                             writer = response.getWriter();
@@ -358,15 +371,19 @@ public class UserOrderController extends BaseController {
                 while (pNames.hasMoreElements()) {
                     String pName = (String) pNames.nextElement();
                     param.put(pName, request.getParameter(pName));
+                    logger.info(pName+"="+request.getParameter(pName));
                 }
                 AliPay aliPay = new AliPay();
                 if (aliPay.checkSign(param)) {
                     try {
                         long userOrderId = Long.parseLong(param.get("out_trade_no"));
                         Double totalFee = Double.parseDouble(param.get("total_amount"));
+                        Double refundFee=Double.parseDouble(param.get("refund_fee"));
+                        logger.info("refundFee"+refundFee);
                         String trade_no = param.get("trade_no");//支付宝订单号
                         long capitalLogId = IDGenerator.generateById("capitalLogId", userOrderId);
-                        userOrderService.refundNotify(userOrderId, capitalLogId, BigDecimal.valueOf(totalFee), trade_no, 3);
+                        userOrderService.insertAlipayuserorderrefund(param);
+                        userOrderService.refundNotify(userOrderId, capitalLogId, BigDecimal.valueOf(refundFee), trade_no , 3);
                         PrintWriter writer = null;
                         try {
                             writer = response.getWriter();
@@ -464,6 +481,22 @@ public class UserOrderController extends BaseController {
             return responseData.success().sign(result);
         } catch (Exception ex) {
             return responseData.error(ex).sign(null);
+        }
+    }
+    //退款详情
+    @PostMapping("/auth/getOrderDetailRefund")
+    public ResponseData getOrderDetailRefund(String data,long userId){
+        Map<String,String> map =JsonUtils.GsonToMaps(data);
+        String orderRefundIdStr = map.get("orderRefundId");
+        if(StringUtils.isNullOrEmpty(orderRefundIdStr)){
+            return responseData.error("参数数据错误").sign(null);
+        }
+        long orderRefundId = Long.parseLong(orderRefundIdStr);
+        try {
+            Data result=userOrderService.getOrderDetailRefund(orderRefundId);
+            return responseData.success().sign(result);
+        } catch (Exception ex) {
+            return  responseData.error(ex).sign(null);
         }
     }
 

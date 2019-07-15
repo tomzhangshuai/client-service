@@ -66,6 +66,9 @@
         update product set lockQuantity=lockQuantity-#{quantity},useableQuantity=useableQuantity+#{quantity} where
         productGlobalId=#{productGlobalId} and machineId=#{machineId} and (lockQuantity-#{quantity})>=0
     </update>
+    <select id="getProductGlobalName" resultType="String">
+        select ProductName from productglobal where ProductGlobalId=#{productGlobalId}
+    </select>
     <update id="lockProduct">
         update product set lockQuantity = (lockQuantity + #{quantity}),useableQuantity=(useableQuantity-#{quantity})
         where machineId=#{machineId} and productglobalId=#{productGlobalId} and (useableQuantity-#{quantity}) >=0
@@ -77,5 +80,16 @@
     <update id="unLockMachineProduct">
         UPDATE machine SET lockQuantity=(lockQuantity-#{quantity}),useableQuantity=(useableQuantity+#{quantity}) WHERE
         machineId=#{machineId} and (lockQuantity-#{quantity})>=0
+    </update>
+    <update id="unLockProductPrepare">
+        update product set Quantity=Quantity-1,UseableQuantity=UseableQuantity-1 where
+        MachineId=#{machineId} and ProductGlobalId=#{productGlobalId} and (UseableQuantity-1)>=0 and (Quantity-1)>=0
+    </update>
+    <update id="unLockMachineProductPrepare">
+        update machine set Quantity=Quantity-1,UseableQuantity=UseableQuantity-1 where
+        MachineId=#{machineId} and (UseableQuantity-1)>=0 and (Quantity-1)>=0
+    </update>
+    <update id="updateRepairStatus">
+        update productprepare set RepairStatus=1 where RepairStatus=0 and ProductOffId=#{productOffId}
     </update>
 </mapper>

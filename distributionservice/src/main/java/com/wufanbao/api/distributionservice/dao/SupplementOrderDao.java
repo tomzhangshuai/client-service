@@ -2,10 +2,12 @@ package com.wufanbao.api.distributionservice.dao;
 
 import com.wufanbao.api.distributionservice.entities.SupplementOrder;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 /**
  *操作补货单订单表
  */
+@Repository
 public interface SupplementOrderDao {
 
     /**

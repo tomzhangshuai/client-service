@@ -3,6 +3,7 @@ package com.wufanbao.api.clientservice.service;
 import com.wufanbao.api.clientservice.common.Data;
 import com.wufanbao.api.clientservice.dao.ProductoffDao;
 import com.wufanbao.api.clientservice.entity.ProductOff;
+import com.wufanbao.api.clientservice.entity.ProductPrepare;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,4 +26,11 @@ public class ProductoffService {
         return  productoffDao.updateMessageStatus(userOrderId);
     }
 
+    public List<ProductPrepare> getProductPrepare() {
+        return productoffDao.getProductPrepare();
+    }
+
+    public long getMachineId(long productOffId) {
+        return productoffDao.getMachineId(productOffId);
+    }
 }

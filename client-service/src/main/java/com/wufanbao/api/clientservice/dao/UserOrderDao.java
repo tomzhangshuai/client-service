@@ -123,8 +123,6 @@ public interface UserOrderDao {
      * @return
      */
     int invalidUserOrder(@Param("userOrderId") long userOrderId);
-
-
     /**
      * 退款中
      *
@@ -146,9 +144,39 @@ public interface UserOrderDao {
      * @param userOrderId
      * @return
      */
-
     int refundedUserOrder(@Param("userOrderId") long userOrderId);
+    /**
+     * 订单分步退款
+     * @param userOrderId
+     * @return
+     */
+    int stepRefundUserOrder(@Param("userOrderId") long userOrderId);
 
+    /**
+     * 插入分步退款
+     * @param orderRefund
+     * @return
+     */
+    int insertOrderRefund(OrderRefund orderRefund);
+
+    /**
+     * 插入分步退款明细
+     * @param orderdetailRefund
+     * @return
+     */
+    int insertOrderdetailRefund(OrderdetailRefund orderdetailRefund);
+    /**
+     * 插入微信退款返回信息
+     * @param wxuserorderrefund
+     * @return
+     */
+    int insertWxuserorderrefund(Wxuserorderrefund wxuserorderrefund);
+
+    /**
+     * 插入支付宝退款返回信息
+     * @return
+     */
+    int insertAlipayuserorderrefund(Alipayuserorderrefund alipayuserorderrefund);
     /**
      * 添加订单行
      *
@@ -232,6 +260,12 @@ public interface UserOrderDao {
      */
     UserOrder getUserOrder(@Param("userOrderId") long userOrderId);
 
+    /**
+     * 根据订单id获取退款订单
+     * @param userOrderId
+     * @return
+     */
+    OrderRefund getOrderRefund(long userOrderId);
     /**
      * 更改状态
      * @param userOrderId
@@ -331,9 +365,24 @@ public interface UserOrderDao {
 
     /**
      * 根据订单id获取手机号
-    * @param userOrderId
+     * @param userOrderId
      * @return
      */
     String getUserMb(@Param("userOrderId") long userOrderId);
 
+    BigDecimal getOrderRefund();
+
+    /**
+     * 获取退款明细
+     * @param orderRefundId
+     * @return
+     */
+    List<Data> getOrderDetailRefund(long orderRefundId);
+
+    /**
+     * 获取未完成的订单
+     * @param userId
+     * @return
+     */
+    List<UserOrder> getIncompleteUserOrder(long userId);
 }

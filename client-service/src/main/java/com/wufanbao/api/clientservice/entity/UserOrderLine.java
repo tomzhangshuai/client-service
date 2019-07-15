@@ -3,7 +3,6 @@ package com.wufanbao.api.clientservice.entity;
 import java.util.Date;
 import java.math.BigDecimal;
 
-
 // UserOrderLine,用户订单明细
 public class UserOrderLine {
     //UserOrderId,
@@ -15,7 +14,7 @@ public class UserOrderLine {
     //取餐数量,
     private int actualQuantity;
     //下架数量
-    private int offQuantity;
+    private int refundQuantity;
     //单价,
     private BigDecimal price;
     //备注,
@@ -25,12 +24,12 @@ public class UserOrderLine {
     //评价,
     private String evaluation;
 
-    public int getOffQuantity() {
-        return offQuantity;
+    public int getRefundQuantity() {
+        return refundQuantity;
     }
 
-    public void setOffQuantity(int offQuantity) {
-        this.offQuantity = offQuantity;
+    public void setRefundQuantity(int offQuantity) {
+        this.refundQuantity = offQuantity;
     }
 
     public long getUserOrderId() {

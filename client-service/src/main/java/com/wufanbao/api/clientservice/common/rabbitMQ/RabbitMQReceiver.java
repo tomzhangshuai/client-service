@@ -146,7 +146,6 @@ public class RabbitMQReceiver {
             String message = new String(body, "UTF-8");
             JSONObject jsonObject = new JSONObject(message);
             String userId = String.valueOf(jsonObject.get("userId"));
-//            String couponDefinitionId = String.valueOf(jsonObject.getString("couponDefinitionId"));
             String couponName = String.valueOf(jsonObject.getString("couponName"));
             messageService.insertMessage(userId,couponName);
         } catch (Exception ex) {
@@ -155,67 +154,8 @@ public class RabbitMQReceiver {
 
     }
 
-//    //餐食过期
-//    @RabbitListener(queues = "#{userOrderEx6Queue.name}")
-//    public void UserOrderEx6(byte[] body) {
-//        try {
-//            String message = new String(body, "UTF-8");
-//            JSONObject jsonObject = new JSONObject(message);
-//            String userId = jsonObject.getString("userId");
-//            String orderId = jsonObject.getString("orderId");
-//
-////            UserOrder userOrder = userOrderService.queryInvalidTime(Long.valueOf(orderId));
-////            Date time = userOrder.getInvalidTime();
-////            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm");
-////            String invalidTime = simpleDateFormat.format(time);
-////            String registrationId = red  isUtils.get(userId + ",1");
-////            String notification_title = "您有一份餐食将在 " + invalidTime + " 后失效，请及时取餐!";
-////            String extrasparam = orderId + ",2";
-////            System.out.println(extrasparam);
-////            int jj = JpushClientUtil.sendToRegistrationId(registrationId, notification_title, extrasparam);
-////            System.out.println(jj + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-//
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//
-//        /*ConnectionFactory factory = new ConnectionFactory();
-//        factory.setHost(host);
-//        factory.setUsername(username);
-//        factory.setPassword(password);
-//        factory.setPort(5672);
-//        Connection connection = factory.newConnection();
-//        Channel channel = connection.createChannel();
-//        channel.exchangeDeclare(meals, "fanout");
-//        //产生一个随机的队列名称
-//        String queueName = channel.queueDeclare().getQueue();
-//        channel.queueBind(queueName, meals, "");//对队列进行绑定
-//        System.out.println("您有一份餐食即将过期");
-//        Consumer consumer = new DefaultConsumer(channel) {
-//            @Override
-//            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-//                String message = new String(body, "UTF-8");
-//                Jedis jedis = new Jedis(getHost,6379);
-//                jedis.auth(getpassword);
-//                JSONObject jsonObject = new JSONObject(message);
-//                String userId = jsonObject.getString("userId");
-//                String orderId = jsonObject.getString("orderId");
-//                UserOrder userOrder = userOrderService.queryInvalidTime(Long.valueOf(orderId));
-//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm");
-//                Date time = userOrder.getInvalidTime();
-//                String invalidTime = simpleDateFormat.format(time);
-//                String registrationId = jedis.get(userId + ",1");
-//                String notification_title = "您有一份餐食将在 " + invalidTime + " 后失效，请及时取餐!";
-//                String extrasparam = orderId + ",2";
-//                System.out.println(extrasparam);
-//                int jj = JpushClientUtil.sendToRegistrationId(registrationId, notification_title, extrasparam);
-//                System.out.println(jj + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-//                jedis.close();
-//            }
-//        };
-//        channel.basicConsume(queueName, true, consumer);//队列会自动删除*/
-//    }
-//
+
+
 //    //邀请用户奖励
 //    @RabbitListener(queues = "#{userFisrtOrderQueue.name}")
 //    public void UserFisrtOrder(byte[] body) {
@@ -310,76 +250,6 @@ public class RabbitMQReceiver {
 //        channel.basicConsume(queueName, true, consumer);//队列会自动删除*/
 //    }
 //
-//    //用户扫码开仓，商品出仓
-//    @RabbitListener(queues = "#{productOutQueue.name}")
-//    public void ProductOut(byte[] body) {
-//        try {
-//            String message = new String(body, "UTF-8");
-//            JSONObject jsonObject = new JSONObject(message);
-//            //System.out.println(message.toString()+"MMMMMMMMMMMMM");
-//            long machineId = jsonObject.getLong("MachineId");//机器id
-//            long userOrderId = jsonObject.getLong("OrderId");//订单id
-//            //redisUtils.lpush(machineId+"" + userOrderId, jsonObject.toString()); //不知道做什么用的
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-//        /*ConnectionFactory factory = new ConnectionFactory();
-//        factory.setHost(host);
-//        factory.setUsername(username);
-//        factory.setPassword(password);
-//        factory.setPort(5672);
-//        Connection connection = factory.newConnection();
-//        Channel channel = connection.createChannel();
-//        channel.exchangeDeclare(productOut, "fanout");
-//        String queueName = channel.queueDeclare().getQueue();
-//        channel.queueBind(queueName, productOut, "");
-//        System.out.println("用户扫码了");
-//        Consumer consumer = new DefaultConsumer(channel) {
-//            @Override
-//            public void handleDelivery(String consumerTag, Envelope envelope,
-//                                       AMQP.BasicProperties properties, byte[] body) throws IOException {
-//                String message = new String(body, "UTF-8");
-//                JSONObject jsonObject = new JSONObject(message);
-//                System.out.println(message.toString()+"MMMMMMMMMMMMM");
-//                String machineId = jsonObject.getString("MachineId");//机器id
-//                String userOrderId = jsonObject.getString("orderId");//订单id
-//                Jedis jedis = new Jedis(getHost,6379);
-//                jedis.auth(getpassword);
-//                jedis.lpush(machineId + userOrderId, jsonObject.toString());
-//                jedis.close();
-//            }
-//        };
-//        channel.basicConsume(queueName, true, consumer);//队列会自动删除*/
-//    }
-////    public int getUserCoupon(long couponDefinitionId,long userId){
-////        UserCouponInfo userCouponInfo=userCouponDao.selectCouponInfo(couponDefinitionId);
-////        ValidityRule validityRules= JSON.parseObject(userCouponInfo.getValidityRule(), ValidityRule.class);
-////        UserCoupon userCoupon=new UserCoupon();
-////        userCoupon.setUserId(userId);
-////        userCoupon.setCouponDefinitionId(couponDefinitionId);
-////        long couponId= IDGenerator.generateById("couponId",userId);
-////        userCoupon.setCouponId(couponId);
-////        userCoupon.setCreateTime(new Date());
-////        userCoupon.setStartTime(new Date());
-////        userCoupon.setStatus(1);
-////        userCoupon.setEndTime(getCouponEndTime(validityRules.getActiveTime()));
-////        int count=userCouponDao.insertUserCoupon(userCoupon);
-////        int count1=userCouponDao.gotCoupon(couponDefinitionId);
-////        int count2=count+count1;
-////        return count2;
-////    }
-////    /**
-////     * 获取优惠券结束时间
-////     * @param actieTime
-////     * @return
-////     */
-//    public Date getCouponEndTime(int actieTime){
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTime(new Date());
-//        calendar.add(Calendar.DAY_OF_MONTH, + actieTime);//+1今天的时间加一天
-//        //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date date = calendar.getTime();
-//        return date;
-//    }
+
 
 }

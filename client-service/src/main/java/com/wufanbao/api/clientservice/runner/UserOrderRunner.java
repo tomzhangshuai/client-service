@@ -1,12 +1,11 @@
 package com.wufanbao.api.clientservice.runner;
 
-import com.wufanbao.api.clientservice.common.CommonFun;
-import com.wufanbao.api.clientservice.common.DateUtils;
-import com.wufanbao.api.clientservice.common.RedisUtils;
-import com.wufanbao.api.clientservice.common.StringUtils;
+import com.wufanbao.api.clientservice.common.*;
 import com.wufanbao.api.clientservice.entity.Machine;
+import com.wufanbao.api.clientservice.entity.ProductPrepare;
 import com.wufanbao.api.clientservice.entity.UserOrder;
 import com.wufanbao.api.clientservice.service.MachineService;
+import com.wufanbao.api.clientservice.service.ProductoffService;
 import com.wufanbao.api.clientservice.service.UserOrderService;
 import com.wufanbao.api.clientservice.service.UserService;
 import org.slf4j.Logger;
@@ -31,6 +30,8 @@ public class UserOrderRunner extends Thread {
     private RedisUtils redisUtils;
     @Autowired
     private MachineService machineService;
+    @Autowired
+    private ProductoffService productoffService;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -97,7 +98,7 @@ public class UserOrderRunner extends Thread {
     }
 
     //超过一天餐食制作中的自动退款
-    @Scheduled(cron = "0/5 * * * * ? ")
+    @Scheduled(cron = "0/30 * * * * ? ")
     public void RefundOrder() throws Exception{
         long userOrderId = 0;
         List<UserOrder> userOrders = userOrderService.getMakingUserOrder(userOrderId);
@@ -118,6 +119,31 @@ public class UserOrderRunner extends Thread {
             }
             try {
                 userOrderService.refundUserOrder(userOrder.getUserOrderId());
+            } catch(Exception ex){
+                logger.error(commonFun.getStackTraceInfo(ex));
+                continue;
+            }
+        }
+    }
+    //与制作库存故障复原
+    @Scheduled(cron = "0/30 * * * * ? ")
+    public void repaireProductPrepares() throws Exception {
+        List<ProductPrepare> productPrepares = productoffService.getProductPrepare();
+        if(productPrepares.size()==0){
+            return;
+        }
+        for (ProductPrepare productPrepare : productPrepares) {
+            if(productPrepare.getRepairStatus()==1){
+                continue;
+            }
+            long productOffId = productPrepare.getProductOffId();
+            long machineId=productoffService.getMachineId(productOffId);
+            Machine machine = machineService.getMachine(machineId);
+            if (!machine.getInMaintenance()) {
+                continue;
+            }
+            try {
+                userOrderService.repaireProductPrepares(productPrepare,machineId);
             } catch(Exception ex){
                 logger.error(commonFun.getStackTraceInfo(ex));
                 continue;

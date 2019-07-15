@@ -6,5 +6,8 @@
     <select id="getMachineProductsBySupplementOrderId" resultType="com.wufanbao.api.distributionservice.entities.Product">
         SELECT productName FROM productglobal WHERE productGlobalId=#{productGlobalId}
     </select>
+    <select id="getProductNameById" resultType="String">
+        select productName from productglobal where productglobalid=#{productGlobalId}
+    </select>
 
 </mapper>

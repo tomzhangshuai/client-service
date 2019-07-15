@@ -7,7 +7,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix = "audience")
-//@PropertySource("classpath:config/Audience")
 @Component
 public class Audience {
     private String clientId;

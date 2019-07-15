@@ -32,6 +32,120 @@
         WHERE u.invalidTime>DATE_SUB(NOW(),INTERVAL 2 HOUR ) AND u.status=3
        AND NOW()>DATE_SUB(u.invalidTime,INTERVAL 30 MINUTE) and u.MessageStatus=0
     </select>
+
+    <insert id="insertAlipayuserorderrefund" parameterType="com.wufanbao.api.clientservice.entity.Alipayuserorderrefund">
+         INSERT INTO alipayuserorderrefund(
+          reqId,
+          `code`,
+          msg,
+          subCode,
+          `subMsg`,
+          `sign`,
+          tradeNo,
+          outTradeNo,
+          buyerLogonId,
+          fundChange,
+          refundFee,
+          refundCurrency,
+          gmtRefundPay,
+          refundDetailItemList,
+          storeName,
+          buyerUserId,
+          refundPresetPaytoolList)
+          VALUES(#{reqId},#{code},#{msg},#{subCode},#{subMsg},#{sign},#{tradeNo},#{outTradeNo},#{buyerLogonId},#{fundChange},#{refundFee},
+          #{refundCurrency},current_timestamp ,#{refundDetailItemList},#{storeName}, #{buyerUserId},#{refundPresetPaytoolList})
+    </insert>
+    <insert id="insertOrderRefund" parameterType="com.wufanbao.api.clientservice.entity.OrderRefund">
+        INSERT INTO OrderRefund(
+	    orderRefundId,
+	    orderId,
+	    joinCompanyId,
+	    machineId,
+	    userId,
+	    status,
+	    submitTime,
+	    planRefundAmount,
+	    actualRefundAmount,
+	    refundWxpayAmount,
+	    refundAlipayAmount,
+        refundCompanyPayAmount,
+        refundFamilyPayAmount,
+        refundDiscountAmount,
+        refundTime,
+        useDiscount,
+        refundReceiveAmount
+        )VALUES(#{orderRefundId},#{orderId},#{joinCompanyId},#{machineId},#{userId},#{status},current_timestamp,#{planRefundAmount},
+        #{actualRefundAmount},#{refundWxpayAmount},#{refundAlipayAmount},
+        #{refundCompanyPayAmount},#{refundFamilyPayAmount},#{refundDiscountAmount},current_timestamp,#{useDiscount},#{refundReceiveAmount})
+    </insert>
+
+    <select id="getOrderRefund" resultType="com.wufanbao.api.clientservice.entity.OrderRefund">
+        SELECT
+        orderRefundId,
+        orderId,
+        joinCompanyId,
+        machineId,
+        userId,
+        STATUS,
+        submitTime,
+        planRefundAmount,
+        actualRefundAmount,
+        refundWxpayAmount,
+        refundAlipayAmount,
+        refundCompanyPayAmount,
+        refundFamilyPayAmount,
+        refundDiscountAmount,
+        refundTime,
+        useDiscount,
+        refundReceiveAmount
+        FROM orderrefund WHERE orderId=#{userOrderId}
+    </select>
+    <insert id="insertOrderdetailRefund" parameterType="com.wufanbao.api.clientservice.entity.OrderdetailRefund">
+        INSERT INTO orderDetailRefund(
+        orderDetailRefundId,
+        orderRefundId,
+        orderId,
+        productGlobalId,
+        quantity,
+        actualRefundQuantity,
+        price,
+        remark
+        )VALUES(#{orderDetailRefundId},#{orderRefundId},#{orderId},#{productGlobalId},#{quantity},#{actualRefundQuantity},#{price},#{remark})
+    </insert>
+    <select id="getOrderDetailRefund" resultType="com.wufanbao.api.clientservice.common.Data">
+        SELECT
+        actualRefundquantity,
+        price,
+        p.productName
+        FROM orderdetailrefund o join productglobal p
+        on o.ProductGlobalId=p.ProductGlobalId WHERE o.orderRefundid=#{orderRefundId}
+    </select>
+    <insert id="insertWxuserorderrefund" parameterType="com.wufanbao.api.clientservice.entity.Wxuserorderrefund">
+        INSERT INTO wxuserorderrefund(
+        reqId,
+        returnCode,
+        returnMsg,
+        appid,
+        mchId,
+        nonceStr,
+        reqInfo,
+        transactionId,
+        outTradeNo,
+        refundId,
+        outRefundNo,
+        totalFee,
+        settlementTotalFee,
+        refundFee,
+        settlementRefundFee,
+        refundStatus,
+        successTime,
+        refundRecvAccout,
+        refundAccount,
+        refundRequestSource
+        )VALUES(#{reqId},#{returnCode},#{returnMsg},#{appid},#{mchId},#{nonceStr},#{reqInfo},#{transactionId},
+        #{outTradeNo},#{refundId},#{outRefundNo},#{totalFee},#{settlementTotalFee},#{refundFee},#{settlementRefundFee},#{refundStatus},
+        #{successTime},#{refundRecvAccout},#{refundAccount},#{refundRequestSource})
+    </insert>
     <insert id="insertUserOrder" parameterType="com.wufanbao.api.clientservice.entity.UserOrder">
         INSERT INTO userorder (userOrderId,joinCompanyId,machineId,userId,
         imageUrl,
@@ -108,6 +222,9 @@
     </update>
     <update id="refundedUserOrder">
         update userOrder set status=-3 WHERE userOrderId=#{userOrderId}
+    </update>
+    <update id="stepRefundUserOrder">
+        update userOrder set status=-4 WHERE userOrderId=#{userOrderId}
     </update>
     <select id="getUserOrderLines" resultType="com.wufanbao.api.clientservice.entity.UserOrderLine">
         select
@@ -273,7 +390,7 @@
         m.machineId as machineId
         from userorder ur
         inner join machine m on ur.machineId = m.machineId where ur.userId=#{userId} and (ur.status=-2 or ur.status=-1
-        or ur.status=-3) order by createTime desc limit #{pageStart},#{pageSize};
+        or ur.status=-3 or ur.status=-4) order by createTime desc limit #{pageStart},#{pageSize};
     </select>
     <select id="getInvalidUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
         select
@@ -284,7 +401,7 @@
     <select id="getMakingUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
         select
         userOrderId,machineId,status,companyPayAmount,familyPayAmount,receiveAmount,actualAmount,isMadeInvoice,payType,userId,discountId,takeTime
-        from userorder where date_sub(CURDATE(),INTERVAL 2 DAY) &lt;= (DATE(TakeTime)) and status=4 and
+        from userorder where date_sub(CURDATE(),INTERVAL 7 DAY) &lt;= (DATE(TakeTime)) and status=4 and
         UserOrderId!=#{userOrderId} order by takeTime desc
     </select>
     <select id="exitUnCompleteUserOrder" resultType="int">
@@ -322,6 +439,39 @@
         u.familyPayAmount,
         u.originateId
         from userOrder as u where u.userOrderId=#{userOrderId}
+    </select>
+    <select id="getIncompleteUserOrder" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
+        select
+        u.userOrderId,
+        u.joinCompanyId,
+        u.machineId,
+        u.userId,
+        u.imageUrl,
+        u.description,
+        u.amount,
+        u.actualAmount,
+        u.receiveAmount,
+        u.status,
+        u.payType,
+        u.createTime,
+        u.completedTime,
+        u.payTime,
+        u.takeNo,
+        u.takeTime,
+        u.assessTime,
+        u.cancelTime,
+        u.refundTime,
+        u.invalidTime,
+        u.discountType,
+        u.discountId,
+        u.isMadeInvoice,
+        u.evaluation,
+        u.easyFind,
+        u.discountAmount,
+        u.companyPayAmount,
+        u.familyPayAmount,
+        u.originateId
+        from userOrder as u where u.userId=#{userId} and status between 1 and 5
     </select>
     <select id="getTakeUserOrders" resultType="com.wufanbao.api.clientservice.entity.UserOrder">
         select userOrderId,description,payTime,status from userOrder where machineId=#{machineId} and userId=#{userId}

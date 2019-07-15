@@ -30,6 +30,26 @@
         FROM productoff
         WHERE sourceid=#{sourceId}
     </select>
+
+    <select id="getProductPrepare" resultType="com.wufanbao.api.clientservice.entity.ProductPrepare">
+    SELECT
+    productOffId,
+    productGlobalId,
+    freezerOut,
+    expirationTime,
+    prepareOut,
+    repairStatus,
+    freezerOutPotion,
+    prepareInPotion,
+    prepareOutPosition
+    FROM productprepare WHERE productoffid IN (
+    SELECT productoffid FROM productoff WHERE sourceId=0 AND offtime>DATE_SUB(NOW(),INTERVAL 3 DAY))
+    AND heatedTime IS NULL
+    </select>
+    <select id="getMachineId" resultType="long">
+        select machineId from productoff where productOffId=#{productOffId}
+    </select>
+
     <update id="updateMessageStatus">
       UPDATE productoff SET messageStatus=1 WHERE sourceid=#{userOrderId}
     </update>

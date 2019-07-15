@@ -24,7 +24,6 @@ public class SupplementOrderController {
     @Autowired
     SupplementOrderService supplementOrderService;
 
-
     /**
      * 卸货前计算
      * @param distributionOrderLine 补货单
@@ -42,12 +41,10 @@ public class SupplementOrderController {
      * @return
      */
     @RequestMapping(value = {"/supplementOrder/dump","/goodsUnder/updateSupplement"}, method = RequestMethod.POST)
-    public Object dump(@Custom SupplementDumpInfo supplementDumpInfo) throws Exception
-    {
+    public Object dump(@Custom SupplementDumpInfo supplementDumpInfo) throws Exception {
         supplementOrderService.dump(0,supplementDumpInfo.getSupplementOrderId(),supplementDumpInfo.getItems());
         return new Object();
     }
-
 
     /**
      * 获取补货详情
@@ -55,11 +52,9 @@ public class SupplementOrderController {
      * @return
      */
     @RequestMapping(value = {"/supplementOrder/getDetail","/supplementDetails/supplementDetailsInfo","/distributionCompletion/distributionCompletionAll"}, method = RequestMethod.POST)
-    public Object getDetail(@Custom SupplementOrder order)
-    {
+    public Object getDetail(@Custom SupplementOrder order) {
         return supplementOrderService.getDetail(order.getSupplementOrderId());
     }
-
 
     /**
      * 获取补货单状态
@@ -67,8 +62,7 @@ public class SupplementOrderController {
      * @return
      */
     @RequestMapping(value = {"/supplementOrder/getOrderStatus","/openStorehouse/openStatus"}, method = RequestMethod.POST)
-    public Object getOrderStatus(@Custom SupplementOrder order)
-    {
+    public Object getOrderStatus(@Custom SupplementOrder order) {
         return supplementOrderService.getOrderStatus(order.getSupplementOrderId());
     }
 
@@ -92,7 +86,6 @@ public class SupplementOrderController {
         return new Object();
     }
 
-
     /**
      * 开前仓
      * @return
@@ -102,7 +95,6 @@ public class SupplementOrderController {
          supplementOrderService.openFront(supplementOpenInfo.getSupplementOrderId());
          return new Object();
     }
-
 
     /**
      * 前仓补货详情
@@ -122,7 +114,6 @@ public class SupplementOrderController {
          supplementOrderService.confirmFront(supplementConfirmInfo.getSupplementOrderId(),supplementConfirmInfo.getItems());
          return new Object();
     }
-
 
     /**
      * 开后仓

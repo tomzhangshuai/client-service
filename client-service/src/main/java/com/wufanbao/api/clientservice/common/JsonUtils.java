@@ -14,7 +14,6 @@ import java.util.Map;
  */
 public class JsonUtils {
     private static Gson gson = null;
-
     static {
         if (gson == null) {
             //gson = new Gson();
@@ -135,6 +134,7 @@ public class JsonUtils {
     }
 
     public static void main(String[] args) {
+
         String sp="/Upload/MachineIco/eb3b1781a05e47979b059dbd84820e5b.jpg;/Upload/MachineIco/d6d7441164c945d7856167169adad9be.jpg;;";
         String[] seekPhotos = null;
         if(!StringUtils.isNullOrEmpty(sp)){

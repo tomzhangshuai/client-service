@@ -2,9 +2,10 @@ package com.wufanbao.api.distributionservice.dao;
 
 import com.wufanbao.api.distributionservice.entities.Product;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository
 public interface ProductDao {
 
     /**

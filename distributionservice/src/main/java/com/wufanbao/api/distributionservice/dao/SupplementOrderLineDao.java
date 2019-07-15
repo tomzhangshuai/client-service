@@ -3,12 +3,14 @@ package com.wufanbao.api.distributionservice.dao;
 import com.wufanbao.api.distributionservice.entities.SupplementOrderLine;
 import com.wufanbao.api.distributionservice.transfer.SupplementOrderLineInfo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * 操作补货单明细表
  */
+@Repository
 public interface SupplementOrderLineDao {
 
     /**

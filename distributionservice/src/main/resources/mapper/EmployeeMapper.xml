@@ -5,12 +5,13 @@
 
     <!--根据用户手机号去查询员工信息 -->
     <select id="getEmployeeByLoginNo" resultType="com.wufanbao.api.distributionservice.entities.Employee">
-        select employeeId,employeename,passWord,mb,EmployeeId,isActive from Employee where LoginNo=#{loginNo}
+        select employeeId,employeename,passWord,mb,EmployeeId,isActive,companyId from Employee where LoginNo=#{loginNo}
     </select>
 
     <!--根据员工Id 获取员工数据-->
     <select id="getEmployeeById" resultType="com.wufanbao.api.distributionservice.entities.Employee">
         select * from Employee where EmployeeId=#{employeeId}
     </select>
+
 
 </mapper>
