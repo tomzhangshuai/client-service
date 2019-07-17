@@ -565,7 +565,7 @@ public class UserOrderService {
             throw new ApiServiceException("订单付款失败，请重试");
         }
         try {
-            String form = aliPay.wapPayOrder(String.valueOf(userOrderId), amount, "伍饭宝-下单点餐支付", "下单支付", clientSetting.getPayCallback() + "/webapi/wechat/payNotify", "");
+            String form = aliPay.wapPayOrder(String.valueOf(userOrderId), amount, "伍饭宝-下单点餐支付", "下单支付", clientSetting.getPayCallback() + "/webapi/alipay/payNotify", "");
             return form;
         } catch (Exception ex) {
             throw new ApiServiceException("微信支付失败");
@@ -1170,6 +1170,10 @@ public class UserOrderService {
         }else {
             refundMoney(userOrderId, userOrder, refundAmount,userOrderLines);
         }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("userOrderId",userOrder.getUserOrderId());
+        jsonObject.put("userId",userOrder.getUserId());
+        rabbitMQSender.sendRefundMoney(jsonObject);
     }
 
     public void refundMoney(long userOrderId, UserOrder userOrder, BigDecimal refundAmount,List<UserOrderLine> userOrderLines) throws ApiServiceException {
@@ -1248,6 +1252,7 @@ public class UserOrderService {
                     }
                 }
                 sendRefundOrder(userOrder);
+                logger.info("发送日志1"+userOrder.getUserOrderId());
                 return;
             } else {
                 refundType(userOrderId, actualAmount, actualAmount, payType, userId);
@@ -1329,6 +1334,7 @@ public class UserOrderService {
             }
         }
         sendRefundOrder(userOrder);
+        logger.info("发送日志2"+userOrder.getUserOrderId());
     }
     public void orderRefundInsert(OrderRefund orderRefund,long userOrderId,UserOrder userOrder,BigDecimal refundAmount){
         long orderRefundId = IDGenerator.generateById("orderRefundId", userOrderId);
@@ -1382,6 +1388,7 @@ public class UserOrderService {
                     if (userOrderDao.refundUserOrder(userOrderId) <= 0) {
                         throw new ApiServiceException("订单退款失败，请重试");
                     }
+                    logger.info("支付宝订单状态修改-1");
                     try {
                         AliPay aliPay = new AliPay();
                         aliPay.refund(String.valueOf(userOrderId), acAmount);
@@ -1471,6 +1478,7 @@ public class UserOrderService {
         jsonObject.put("userOrderId", userOrderId);
         jsonObject.put("machineId", userOrder.getMachineId());
         rabbitMQSender.sendRefundOrder(jsonObject);
+        logger.info("打印日志3"+userOrderId);
     }
 
     //退款通知
@@ -1494,27 +1502,34 @@ public class UserOrderService {
         if (userOrder == null) {
             throw new ApiServiceException("支付的订单不存在"+userOrderId);
         }
+        logger.info("准备修改订单状态"+amount);
         if (userOrder.getStatus() != -1) {
+            logger.info("查看订单状态"+userOrder.getStatus());
             return userOrder;
         }
         OrderRefund orderRefund=userOrderDao.getOrderRefund(userOrderId);
+        logger.info("准备修改订单状态3"+amount);
         if(orderRefund==null){
             if (userOrder.getActualAmount().compareTo(amount) != 0) {
+                logger.info("订单金额错误2");
                 throw new ApiServiceException("订单金额错误");
             }
             if (userOrderDao.refundedUserOrder(userOrderId) <= 0) {
+                logger.info("订单状态改为-3失败");
                 throw new ApiServiceException("订单退款失败");
             }
+            logger.info("订单状态改为-3");
             userOrder.setStatus(-3);
         }else{
             logger.info("------------------------------111--------------------------------------------------------");
             if((orderRefund.getRefundWxpayAmount().compareTo(amount)!=0)&&(orderRefund.getRefundAlipayAmount().compareTo(amount)!=0)){
-                logger.info(""+amount);
+                logger.info("订单金额局部退款错误"+amount);
                 throw new ApiServiceException("订单金额局部退款错误");
             }
             logger.info(""+amount);
             logger.info("------------------------------222--------------------------------------------------------");
             if (userOrderDao.stepRefundUserOrder(userOrderId) <= 0) {
+                logger.info("订单退款失败，请重试");
                 throw new ApiServiceException("订单退款失败，请重试");
             }
             logger.info("------------------------------333--------------------------------------------------------");

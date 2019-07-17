@@ -1,3 +1,4 @@
+
 package com.wufanbao.api.clientservice.runner;
 
 import org.springframework.beans.BeansException;
@@ -23,3 +24,4 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     }
 
 }
+

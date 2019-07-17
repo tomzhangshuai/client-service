@@ -177,7 +177,7 @@
     </update>
     <update id="payUserOrder">
         update userOrder set status=3,payType=#{payType},invalidTime=#{invalidTime},payTime=CURRENT_TIMESTAMP WHERE
-        userOrderId=#{userOrderId}
+        userOrderId=#{userOrderId} and status=2
     </update>
     <update id="notifyPayUserOrder">
         update userOrder set

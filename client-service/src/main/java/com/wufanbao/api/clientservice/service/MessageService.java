@@ -77,12 +77,15 @@ public class MessageService {
     }
 
     @Transactional(rollbackFor = ApiServiceException.class)
-    public void insertMessage(String userId,String couponName) throws ApiServiceException {
+    public void insertMessage(String userId, String message, String content) throws ApiServiceException {
+        if(StringUtils.isNullOrEmpty(userId)||StringUtils.isNullOrEmpty(message)){
+            throw new ApiServiceException("数据错误");
+        }
         long messageinfoId = IDGenerator.generate("Messageinfo");
         MessageInfo messageInfo=new MessageInfo();
         messageInfo.setMessageInfoId(messageinfoId);
         messageInfo.setContentType(1);
-        messageInfo.setContent(couponName+" 今日即将过期");
+        messageInfo.setContent(message+" "+content);
         messageInfo.setMessageType(2);
         messageInfo.setIsActive(true);
         if(messageDao.insertMessageInfo(messageInfo)<0){
@@ -97,6 +100,5 @@ public class MessageService {
             throw new ApiServiceException("插入用户消息失败");
         }
     }
-
 
 }

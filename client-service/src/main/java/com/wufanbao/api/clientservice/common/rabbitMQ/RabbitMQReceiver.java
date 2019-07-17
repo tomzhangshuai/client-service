@@ -5,10 +5,7 @@ import com.wufanbao.api.clientservice.dao.MessageDao;
 import com.wufanbao.api.clientservice.entity.Machine;
 import com.wufanbao.api.clientservice.entity.UserOrder;
 import com.wufanbao.api.clientservice.entity.UserOrderLine;
-import com.wufanbao.api.clientservice.service.MachineService;
-import com.wufanbao.api.clientservice.service.MessageService;
-import com.wufanbao.api.clientservice.service.UserOrderService;
-import com.wufanbao.api.clientservice.service.UserService;
+import com.wufanbao.api.clientservice.service.*;
 import org.aspectj.weaver.ast.Var;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -81,7 +78,7 @@ public class RabbitMQReceiver {
         //APP内支付  暂时不用
         if (originateid == 1 || originateid == 2 || originateid == 3) {
             Map<String, String> param = new HashMap<>();
-           String mb=userOrderService.getUserMb(userOrderId);
+            String mb=userOrderService.getUserMb(userOrderId);
             param.put("id", mb);
             String userOrderIdstr = String.valueOf(userOrderId);
             param.put("msg", "订单" + userOrderIdstr + "已成功取餐");
@@ -92,8 +89,8 @@ public class RabbitMQReceiver {
                 messageService.jpushAll(param);
                 logger.info("订单信息提醒推送成功，订单" + userOrderIdstr);
             } catch (Exception ex) {
-             logger.info("订单信息提醒推送失败，订单" + userOrderIdstr);
-             logger.error(commonFun.getStackTraceInfo(ex));
+                logger.info("订单信息提醒推送失败，订单" + userOrderIdstr);
+                logger.error(commonFun.getStackTraceInfo(ex));
             }
         }
     }
@@ -142,19 +139,30 @@ public class RabbitMQReceiver {
     //优惠券
     @RabbitListener(queues = "#{userCouponEx6Queue.name}")
     public void UserCouponEx6(byte[] body) {
+        String content="今日即将过期";
         try {
             String message = new String(body, "UTF-8");
             JSONObject jsonObject = new JSONObject(message);
             String userId = String.valueOf(jsonObject.get("userId"));
             String couponName = String.valueOf(jsonObject.getString("couponName"));
-            messageService.insertMessage(userId,couponName);
+            messageService.insertMessage(userId,couponName,content);
         } catch (Exception ex) {
             logger.error(commonFun.getStackTraceInfo(ex));
         }
-
     }
-
-
+    @RabbitListener(queues = "#{refundMoneyQueue.name}")
+    public void refundMoney(byte[] body){
+        String content="款项已原路返回";
+        try {
+            String message = new String(body,"UTF-8");
+            JSONObject jsonObject=new JSONObject(message);
+            String userId=String.valueOf(jsonObject.get("userId"));
+            String userOrderId="订单"+String.valueOf(jsonObject.get("userOrderId"));
+            messageService.insertMessage(userId,userOrderId,content);
+        } catch (Exception e) {
+            logger.error(commonFun.getStackTraceInfo(e));
+        }
+    }
 
 //    //邀请用户奖励
 //    @RabbitListener(queues = "#{userFisrtOrderQueue.name}")

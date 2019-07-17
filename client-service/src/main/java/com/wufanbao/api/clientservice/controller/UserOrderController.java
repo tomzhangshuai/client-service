@@ -234,7 +234,6 @@ public class UserOrderController extends BaseController {
         } catch (Exception ex) {
             logger.error(commonFun.getStackTraceInfo(ex));
         }
-
         if (map.containsKey("return_code") && map.get("return_code").toString().equalsIgnoreCase("SUCCESS")) {
             try {
                 WechatPay wechatPay = new WechatPay();
@@ -324,7 +323,6 @@ public class UserOrderController extends BaseController {
             Enumeration<?> pNames = request.getParameterNames();
             Map<String, String> param = new HashMap<String, String>();
             try {
-                logger.info("----------------------------------");
                 while (pNames.hasMoreElements()) {
                     String pName = (String) pNames.nextElement();
                     param.put(pName, request.getParameter(pName));

@@ -139,6 +139,20 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue refundMoneyQueue() {
+        //队列名称，是否持久化
+        return new AnonymousQueue();
+    }
+    @Bean
+    public FanoutExchange fanoutExchangeRefundMoney(){
+        return new FanoutExchange("refundMoney");
+    }
+    @Bean
+    public Binding bindingExchangeRefundMoney(Queue refundMoneyQueue, FanoutExchange fanoutExchangeRefundMoney) {
+        return BindingBuilder.bind(refundMoneyQueue).to(fanoutExchangeRefundMoney);
+    }
+
+    @Bean
     public Queue userpayBindQueue(){
         return new AnonymousQueue();
     }
@@ -162,6 +176,5 @@ public class RabbitMQConfig {
     Binding bindingExchangeUserpayUnBind(Queue userpayUnBindQueue,FanoutExchange fanoutExchangeUserpayUnBind){
         return BindingBuilder.bind(userpayUnBindQueue).to(fanoutExchangeUserpayUnBind);
     }
-
 
 }

@@ -16,6 +16,7 @@ import com.wufanbao.api.clientservice.common.wechat.UserInfo;
 import com.wufanbao.api.clientservice.service.ApiServiceException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.stereotype.Component;
+import sun.tools.jar.resources.jar;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -91,7 +92,6 @@ public class AliPay {
         AlipayTradeFastpayRefundQueryModel model = new AlipayTradeFastpayRefundQueryModel();
         model.setOutTradeNo(tradeNo); //商家订单编号
         model.setOutRequestNo(tradeNo);//请求退款接口时，传入的退款请求号，如果在退款请求时未传入，则该值为创建交易时的外部交易号
-//        model.setOutRequestNo(outRequestNo);
         AlipayTradeFastpayRefundQueryRequest request = new AlipayTradeFastpayRefundQueryRequest();
 
         request.setBizModel(model);

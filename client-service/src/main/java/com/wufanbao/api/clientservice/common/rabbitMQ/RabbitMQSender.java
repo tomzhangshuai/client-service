@@ -42,4 +42,9 @@ public class RabbitMQSender {
     public void sendInvalidCoupon(Object message){
         amqpTemplate.convertAndSend("UserCouponEx6","",String.valueOf(message).getBytes());
     }
+    //退款站内通知
+    public void sendRefundMoney(Object message){
+        amqpTemplate.convertAndSend("refundMoney","",String.valueOf(message).getBytes());
+    }
+
 }
