@@ -17,6 +17,7 @@ import java.util.*;
 
 @Service
 public class MachineService {
+    //test1
     @Autowired
     private MachineDao machineDao;
     @Autowired
