@@ -12,6 +12,7 @@ public class Demo {
         //d:111
         //C:222
         //c:dev_branch
+        //d:22
         HashMap map=new HashMap<String,Object>();
         map.put("machineId", "001");
         map.put("address", "address");
