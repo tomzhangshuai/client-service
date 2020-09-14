@@ -10,7 +10,7 @@ public class Demo {
     public static void main(String []args) {
         //c:111
         //d:111
-
+        //C:222
 
         HashMap map=new HashMap<String,Object>();
         map.put("machineId", "001");
